@@ -1,0 +1,296 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── ArchStudio Design Token System ─────────────────────────────────────── */
+@layer base {
+  :root {
+    /* Semantic base tokens (HSL for Tailwind compat) */
+    --background: 40 14% 97%;           /* #F7F7F5 */
+    --foreground: 0 0% 10%;             /* #1A1A1A */
+    --card: 0 0% 100%;                  /* #FFFFFF */
+    --card-foreground: 0 0% 10%;
+    --primary: 212 67% 15%;             /* #0A2540 Royal Blue */
+    --primary-foreground: 0 0% 100%;
+    --muted: 40 14% 94%;
+    --muted-foreground: 220 9% 46%;     /* #6B7280 */
+    --accent: 43 63% 52%;               /* #D4AF37 Gold */
+    --accent-foreground: 212 67% 15%;   /* Royal Blue on Gold */
+    --border: 212 67% 15% / 0.12;
+    --radius: 0.375rem;
+
+    /* ArchStudio Brand Colors */
+    --arch-primary: #0A2540;
+    --arch-gold: #D4AF37;
+    --arch-gold-dark: #B8941F;
+    --arch-dark: #1A1A1A;
+    --arch-bg: #F7F7F5;
+    --arch-surface: #FFFFFF;
+    --arch-muted: #6B7280;
+    --arch-border: rgba(10, 37, 64, 0.12);
+    --arch-border-subtle: rgba(10, 37, 64, 0.06);
+
+    /* Sidebar specific */
+    --sidebar-bg: #0A2540;
+    --sidebar-deep: #071c30;
+    --sidebar-text: rgba(255,255,255,0.85);
+    --sidebar-text-muted: rgba(255,255,255,0.5);
+    --sidebar-active-text: #D4AF37;
+    --sidebar-hover-bg: rgba(212,175,55,0.08);
+    --sidebar-active-bg: rgba(212,175,55,0.12);
+  }
+
+  .dark {
+    --background: 0 0% 10%;            /* #1A1A1A */
+    --foreground: 0 0% 97%;
+    --card: 212 67% 8%;                 /* Slightly lighter charcoal */
+    --card-foreground: 0 0% 97%;
+    --primary: 43 63% 52%;             /* Gold becomes primary in dark */
+    --primary-foreground: 212 67% 15%;
+    --muted: 212 20% 15%;
+    --muted-foreground: 220 9% 55%;
+    --accent: 43 63% 52%;
+    --accent-foreground: 212 67% 15%;
+    --border: 0 0% 100% / 0.08;
+
+    --arch-bg: #1A1A1A;
+    --arch-surface: #1e2832;
+    --arch-border: rgba(255,255,255,0.08);
+    --arch-border-subtle: rgba(255,255,255,0.04);
+
+    --sidebar-bg: #0A2540;
+    --sidebar-deep: #071c30;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    transition-property: color, background-color, border-color, box-shadow, transform;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  }
+}
+
+/* ─── Semantic Component Classes ─────────────────────────────────────────── */
+@layer components {
+
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white rounded-sm transition-all duration-200;
+    background-color: var(--arch-primary);
+  }
+  .btn-primary:hover {
+    background-color: #0d3060;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(10,37,64,0.25);
+  }
+
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-xs font-semibold uppercase tracking-wider rounded-sm transition-all duration-200;
+    background-color: var(--arch-gold);
+    color: var(--arch-primary);
+  }
+  .btn-gold:hover {
+    background-color: var(--arch-gold-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(212,175,55,0.3);
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-xs font-semibold uppercase tracking-wider rounded-sm transition-all duration-200;
+    border: 1px solid var(--arch-primary);
+    color: var(--arch-primary);
+    background: transparent;
+  }
+  .btn-outline:hover {
+    background-color: var(--arch-primary);
+    color: white;
+  }
+
+  /* Section label (small gold uppercase text above headings) */
+  .section-label {
+    @apply text-xs font-bold uppercase tracking-widest;
+    color: var(--arch-gold);
+  }
+
+  /* Cards */
+  .arch-card {
+    @apply bg-white rounded-sm;
+    border: 1px solid var(--arch-border);
+    box-shadow: 0 2px 8px rgba(10,37,64,0.05);
+  }
+  .dark .arch-card {
+    background-color: var(--arch-surface);
+    border-color: var(--arch-border);
+  }
+
+  /* Gold divider line */
+  .arch-divider {
+    display: block;
+    height: 2px;
+    width: 40px;
+    background-color: var(--arch-gold);
+    margin-top: 1rem;
+  }
+
+  /* Admin sidebar nav item */
+  .sidebar-nav-item {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-sm text-sm font-medium transition-all duration-200 cursor-pointer;
+    color: var(--sidebar-text);
+  }
+  .sidebar-nav-item:hover {
+    background-color: var(--sidebar-hover-bg);
+    color: white;
+  }
+  .sidebar-nav-item.active {
+    background-color: var(--sidebar-active-bg);
+    color: var(--sidebar-active-text);
+    border-left: 2px solid var(--arch-gold);
+    padding-left: calc(1rem - 2px);
+  }
+
+  /* Admin stat card */
+  .stat-card {
+    @apply bg-white rounded-lg p-5;
+    border: 1px solid var(--arch-border);
+    box-shadow: 0 2px 8px rgba(10,37,64,0.05);
+  }
+  .dark .stat-card {
+    @apply bg-neutral-900 border-neutral-800;
+  }
+
+  /* Form input (admin) */
+  .arch-input {
+    @apply w-full bg-neutral-50 dark:bg-neutral-800 border text-sm rounded-md py-2.5 px-3 focus:outline-none transition-all;
+    border-color: var(--arch-border);
+    color: var(--arch-dark);
+  }
+  .arch-input:focus {
+    border-color: var(--arch-gold);
+    box-shadow: 0 0 0 2px rgba(212,175,55,0.15);
+  }
+  .dark .arch-input {
+    color: white;
+  }
+}
+
+/* ─── Scrollbar Styling ───────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(10, 37, 64, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.4);
+}
+
+/* ─── Animation Utilities ────────────────────────────────────────────────── */
+@keyframes slide-in {
+  from { transform: translateY(10px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scale-in {
+  from { transform: scale(0.97); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.animate-slide-in  { animation: slide-in 0.25s ease-out forwards; }
+.animate-fade-in   { animation: fade-in  0.3s ease-out forwards; }
+.animate-scale-in  { animation: scale-in 0.2s ease-out forwards; }
+
+/* ─── Gold accent line for section headers ───────────────────────────────── */
+.gold-line::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 2px;
+  background-color: var(--arch-gold);
+  margin-top: 0.75rem;
+}
+
+/* ─── Hero cinematic overlay ─────────────────────────────────────────────── */
+.hero-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 37, 64, 0.65) 0%,
+    rgba(10, 37, 64, 0.45) 40%,
+    rgba(10, 37, 64, 0.75) 100%
+  );
+}
+
+/* ─── Portfolio card hover ────────────────────────────────────────────────── */
+.portfolio-card img {
+  transition: transform 500ms ease;
+}
+.portfolio-card:hover img {
+  transform: scale(1.04);
+}
+
+/* ─── Sidebar active gold indicator bar ──────────────────────────────────── */
+.nav-active-indicator {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background-color: var(--arch-gold);
+  border-radius: 0 2px 2px 0;
+
+}
+
+@layer base {
+  /* Global form control contrast and readability overrides */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="date"],
+  select,
+  textarea {
+    @apply bg-white text-neutral-900 border-neutral-200 transition-colors;
+  }
+
+  .dark input[type="text"],
+  .dark input[type="email"],
+  .dark input[type="password"],
+  .dark input[type="number"],
+  .dark input[type="tel"],
+  .dark input[type="url"],
+  .dark input[type="date"],
+  .dark select,
+  .dark textarea {
+    background-color: var(--arch-surface, #1e2832) !important;
+    color: #ffffff !important;
+    border-color: var(--arch-border, rgba(255, 255, 255, 0.08)) !important;
+  }
+
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+}
