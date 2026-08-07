@@ -1,4 +1,4 @@
-﻿const prisma = require('../utils/db');
+const prisma = require('../utils/db');
 
 const getPartners = async (req, res) => {
   try {
@@ -15,19 +15,25 @@ const getPartners = async (req, res) => {
 
 const createPartner = async (req, res) => {
   const { companyName, logo, websiteUrl } = req.body;
+
+  if (!companyName || !companyName.trim() || !logo || !logo.trim()) {
+    return res.status(400).json({ message: 'Company Name and Logo URL are required fields.' });
+  }
+
   try {
-    // Validate logo URL
-    if (logo) {
-    }
     const partner = await prisma.partner.create({
-      data: { companyName, logo, websiteUrl }
+      data: {
+        companyName: companyName.trim(),
+        logo: logo.trim(),
+        websiteUrl: websiteUrl ? websiteUrl.trim() : null,
+      }
     });
 
     await prisma.activityLog.create({
       data: {
         action: 'CREATE_PARTNER',
         details: `Added brand partner: ${companyName}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 
@@ -41,20 +47,34 @@ const createPartner = async (req, res) => {
 const updatePartner = async (req, res) => {
   const { id } = req.params;
   const { companyName, logo, websiteUrl } = req.body;
+
+  if (!companyName || !companyName.trim() || !logo || !logo.trim()) {
+    return res.status(400).json({ message: 'Company Name and Logo URL are required fields.' });
+  }
+
   try {
-    // Validate logo URL
-    if (logo) {
+    const existing = await prisma.partner.findFirst({
+      where: { id, deletedAt: null }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: 'Partner not found.' });
     }
+
     const partner = await prisma.partner.update({
       where: { id },
-      data: { companyName, logo, websiteUrl }
+      data: {
+        companyName: companyName.trim(),
+        logo: logo.trim(),
+        websiteUrl: websiteUrl ? websiteUrl.trim() : null,
+      }
     });
 
     await prisma.activityLog.create({
       data: {
         action: 'UPDATE_PARTNER',
         details: `Updated brand partner: ${companyName}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 
@@ -68,6 +88,14 @@ const updatePartner = async (req, res) => {
 const deletePartner = async (req, res) => {
   const { id } = req.params;
   try {
+    const existing = await prisma.partner.findFirst({
+      where: { id, deletedAt: null }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: 'Partner not found.' });
+    }
+
     const partner = await prisma.partner.update({
       where: { id },
       data: { deletedAt: new Date() }
@@ -77,7 +105,7 @@ const deletePartner = async (req, res) => {
       data: {
         action: 'DELETE_PARTNER',
         details: `Soft-deleted partner: ${partner.companyName}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 

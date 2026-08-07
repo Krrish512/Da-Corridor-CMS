@@ -6,13 +6,17 @@ import {
 } from 'lucide-react';
 
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import MediaPicker from '../components/ui/media/MediaPicker';
 import { validateImageUrl, validateImagesList } from '../utils/validation';
 
+import { StatusBadge } from '../components/cms/StatusBadge';
+
 const Portfolio = () => {
   const queryClient = useQueryClient();
   const { addToast } = useToast();
+  const { hasPermission, user: currentUser } = useAuth();
 
   // View state: 'list' | 'create' | 'edit'
   const [view, setView] = useState('list');
@@ -22,6 +26,7 @@ const Portfolio = () => {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [status, setStatus] = useState('');
+  const [publishingStatus, setPublishingStatus] = useState('');
   const [featured, setFeatured] = useState('');
   const [page, setPage] = useState(1);
   const limit = 6;
@@ -38,6 +43,10 @@ const Portfolio = () => {
     area: '',
     completionDate: '',
     status: 'Completed',
+    // Only SUPER_ADMIN can publish directly; all others default to PENDING_APPROVAL
+    publishingStatus: currentUser?.role === 'SUPER_ADMIN' ? 'PUBLISHED' : 'PENDING_APPROVAL',
+    scheduledPublishAt: '',
+    scheduledUnpublishAt: '',
     description: '',
     designChallenge: '',
     solution: '',
@@ -52,11 +61,11 @@ const Portfolio = () => {
   // QUERIES
   // ----------------------------------------------------
   const { data: projectsData, isLoading, isError } = useQuery({
-    queryKey: ['projects', search, category, status, featured, page],
+    queryKey: ['projects', search, category, status, publishingStatus, featured, page],
     queryFn: () =>
       api
         .get('/portfolio', {
-          params: { search, category, status, featured, page, limit },
+          params: { search, category, status, publishingStatus, featured, page, limit },
         })
         .then((res) => res.data),
   });
@@ -92,6 +101,22 @@ const Portfolio = () => {
     onError: () => addToast('Failed to delete project.', 'error'),
   });
 
+  // Dedicated approval mutation — calls PATCH /portfolio/:id/approve
+  // This ONLY updates publishingStatus + approvedById. It never creates a new record,
+  // never regenerates the slug, and never touches any content fields.
+  const approveMutation = useMutation({
+    mutationFn: (proj) => api.patch(`/portfolio/${proj.id}/approve`),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['projects']);
+      queryClient.invalidateQueries(['publicProjects']);
+      queryClient.invalidateQueries(['publicFeaturedProjects']);
+      addToast('Project approved and published successfully!', 'success');
+    },
+    onError: (err) => {
+      addToast(err.response?.data?.message || 'Failed to approve project.', 'error');
+    },
+  });
+
   // Action Handlers
   const handleOpenAdd = () => {
     setForm(initialFormState);
@@ -117,6 +142,9 @@ const Portfolio = () => {
       area: project.area,
       completionDate: formattedDate,
       status: project.status,
+      publishingStatus: project.publishingStatus || 'PUBLISHED',
+      scheduledPublishAt: project.scheduledPublishAt ? new Date(project.scheduledPublishAt).toISOString().slice(0, 16) : '',
+      scheduledUnpublishAt: project.scheduledUnpublishAt ? new Date(project.scheduledUnpublishAt).toISOString().slice(0, 16) : '',
       description: project.description,
       designChallenge: project.designChallenge,
       solution: project.solution,
@@ -210,13 +238,16 @@ const Portfolio = () => {
             </select>
 
             <select
-              value={featured}
-              onChange={(e) => { setFeatured(e.target.value); setPage(1); }}
+              value={publishingStatus}
+              onChange={(e) => { setPublishingStatus(e.target.value); setPage(1); }}
               className="bg-neutral-50 dark:bg-neutral-800 border rounded-md py-1.5 px-3 text-xs text-neutral-500 font-semibold"
             >
-              <option value="">Featured Status</option>
-              <option value="true">Featured Only</option>
-              <option value="false">Non-Featured</option>
+              <option value="">All Publishing Statuses</option>
+              <option value="PUBLISHED">Published</option>
+              <option value="PENDING_APPROVAL">Pending Approval</option>
+              <option value="DRAFT">Draft</option>
+              <option value="ARCHIVED">Archived</option>
+              <option value="SCHEDULED">Scheduled</option>
             </select>
           </div>
 
@@ -235,7 +266,7 @@ const Portfolio = () => {
                       <th className="p-3.5">Project Title</th>
                       <th className="p-3.5">Category</th>
                       <th className="p-3.5">Client & Location</th>
-                      <th className="p-3.5">Status</th>
+                      <th className="p-3.5">Publish Status</th>
                       <th className="p-3.5 text-right">Actions</th>
                     </tr>
                   </thead>
@@ -262,33 +293,41 @@ const Portfolio = () => {
                           <div className="text-[10px] text-neutral-400 flex items-center gap-0.5 mt-0.5"><MapPin className="w-3 h-3" /> {proj.location}</div>
                         </td>
                         <td className="p-3.5">
-                          <span className={`px-2 py-0.5 rounded-[4px] text-[9px] font-bold tracking-wider uppercase ${
-                            proj.status === 'Completed'
-                              ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400'
-                              : proj.status === 'In Progress'
-                              ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/20'
-                              : 'bg-neutral-100 text-neutral-500'
-                          }`}>
-                            {proj.status}
-                          </span>
+                          <StatusBadge status={proj.publishingStatus} scheduledPublishAt={proj.scheduledPublishAt} />
                         </td>
-                        <td className="p-3.5 text-right flex justify-end gap-2 mt-2">
-                          <button
-                            onClick={() => handleOpenEdit(proj)}
-                            className="p-1 rounded text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (window.confirm(`Delete project "${proj.title}"?`)) {
-                                deleteMutation.mutate(proj.id);
-                              }
-                            }}
-                            className="p-1 rounded text-neutral-400 hover:text-rose-500"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                        <td className="p-3.5 text-right items-center justify-end gap-2">
+                          <div className="flex items-center justify-end gap-2">
+            {/* Approve button — only SUPER_ADMIN, only for PENDING_APPROVAL projects */}
+                            {currentUser?.role === 'SUPER_ADMIN' && proj.publishingStatus === 'PENDING_APPROVAL' && (
+                              <button
+                                onClick={() => approveMutation.mutate(proj)}
+                                disabled={approveMutation.isPending}
+                                className="px-2 py-1 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 hover:bg-amber-200 disabled:opacity-50"
+                              >
+                                Approve
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleOpenEdit(proj)}
+                              className="p-1 rounded text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
+                              title="Edit Project"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            {hasPermission('PORTFOLIO_DELETE') && (
+                              <button
+                                onClick={() => {
+                                  if (window.confirm(`Delete project "${proj.title}"?`)) {
+                                    deleteMutation.mutate(proj.id);
+                                  }
+                                }}
+                                className="p-1 rounded text-neutral-400 hover:text-rose-500"
+                                title="Delete Project"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -471,6 +510,53 @@ const Portfolio = () => {
 
             {/* Sidebar Column */}
             <div className="space-y-6">
+              {/* Publishing & Approval Card */}
+              <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-6 shadow-premium space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 pb-2 border-b">Publishing & Approval</h3>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-neutral-400 uppercase">Publishing Status</label>
+                  <select
+                    value={form.publishingStatus}
+                    onChange={(e) => setForm({ ...form, publishingStatus: e.target.value })}
+                    className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded py-1.5 px-2.5 text-xs font-bold text-neutral-900 dark:text-white"
+                  >
+                    {currentUser?.role === 'SUPER_ADMIN' ? (
+                      // SUPER_ADMIN: full control over publishing status
+                      <>
+                        <option value="PUBLISHED">Published</option>
+                        <option value="PENDING_APPROVAL">Pending Approval</option>
+                        <option value="DRAFT">Draft</option>
+                        <option value="ARCHIVED">Archived</option>
+                      </>
+                    ) : (
+                      // ADMIN and CO_ADMIN: cannot publish directly
+                      <>
+                        <option value="PENDING_APPROVAL">Submit for Approval</option>
+                        <option value="DRAFT">Save as Draft</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                {currentUser?.role !== 'SUPER_ADMIN' && (
+                  <p className="text-[10px] text-amber-600 dark:text-amber-400 italic">
+                    Your project will be submitted for SUPER_ADMIN review &amp; approval before publishing.
+                  </p>
+                )}
+
+                <div className="space-y-1 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                  <label className="text-[9px] font-bold text-neutral-400 uppercase">Schedule Auto-Publish (Optional)</label>
+                  <input
+                    type="datetime-local"
+                    value={form.scheduledPublishAt}
+                    onChange={(e) => setForm({ ...form, scheduledPublishAt: e.target.value })}
+                    className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded py-1.5 px-2 text-xs"
+                  />
+                  <span className="text-[10px] text-neutral-400 block">Set future date/time to automatically publish this project.</span>
+                </div>
+              </div>
+
               {/* Card 4: Project Parameters */}
               <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 rounded-lg shadow-premium space-y-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 pb-2 border-b">Project Attributes</h3>

@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 
 import api from '../../utils/api';
+import SEO from '../../components/common/SEO';
 
 const Blog = () => {
   // Accordion active indexes
@@ -17,11 +18,13 @@ const Blog = () => {
   const { data: blogs, isLoading: blogsLoading } = useQuery({
     queryKey: ['publicBlogs'],
     queryFn: () => api.get('/blog', { params: { isPublic: true } }).then(res => res.data?.data || []),
+    staleTime: 1000 * 60 * 5,
   });
 
   const { data: faqs, isLoading: faqsLoading } = useQuery({
     queryKey: ['publicFaqs'],
     queryFn: () => api.get('/faqs').then(res => res.data || []),
+    staleTime: 1000 * 60 * 10,
   });
 
   const toggleFaq = (index) => {
@@ -30,6 +33,11 @@ const Blog = () => {
 
   return (
     <div className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24">
+      <SEO
+        title="Design Notebook & Architectural Insights"
+        description="Quarterly design analysis, architectural insights, material reviews, and answers to frequently asked client questions."
+        path="/blog"
+      />
       
       {/* 1. BLOGS SECTION */}
       <section>
@@ -63,6 +71,8 @@ const Blog = () => {
                     <img 
                       src={blog.featuredImage} 
                       alt={blog.title} 
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover object-center group-hover:scale-103 transition-transform duration-300"
                     />
                   </div>
@@ -178,6 +188,8 @@ const Blog = () => {
                 <img 
                   src={selectedArticle.featuredImage} 
                   alt={selectedArticle.title} 
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover object-center"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 to-transparent" />

@@ -1,0 +1,44 @@
+# Node.js dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+generated/
+
+# Production build outputs
+dist/
+frontend/dist/
+
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+backend/.env
+
+# Uploads directory contents (preserve the directory structure but ignore upload files)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Temporary files, IDE metadata, and Office locks
+~$*.docx
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+.jetro/
+.idea/
+.vscode/
+
+# Duplicate/Stray files
+website_testing_and_guides/new
+website_testing_and_guides/~$sting_checklist.docx
+
+# Archive directory (branding sources, Prisma dev proxy — not part of application)
+.archive/
+
+# Backend backup files (generated at runtime)
+backend/backups/
+
+# Build analysis artifacts (rollup-plugin-visualizer output)
+frontend/dist/stats.html

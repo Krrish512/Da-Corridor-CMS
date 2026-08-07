@@ -16,15 +16,15 @@ const getContactDetails = async (req, res) => {
       details = await prisma.contactDetails.create({
         data: {
           officeAddress: "128 Design District, Suite 500, New York, NY 10013",
-          email: "info@archstudio.com",
+          email: "info@dacorridor.com",
           phone: "+1 (555) 234-5678",
           whatsApp: "+1 (555) 987-6543",
-          googleMapsUrl: "https://maps.google.com",
+          googleMapsUrl: "",
           workingHours: "Mon - Fri: 9:00 AM - 6:00 PM",
-          socialFacebook: "https://facebook.com/archstudio",
-          socialTwitter: "https://twitter.com/archstudio",
-          socialLinkedin: "https://linkedin.com/company/archstudio",
-          socialInsta: "https://instagram.com/archstudio"
+          socialFacebook: "",
+          socialTwitter: "",
+          socialLinkedin: "",
+          socialInsta: ""
         }
       });
     }
@@ -42,6 +42,10 @@ const updateContactDetails = async (req, res) => {
     socialFacebook, socialTwitter, socialLinkedin, socialInsta
   } = req.body;
 
+  if (!officeAddress || !officeAddress.trim() || !email || !email.trim() || !phone || !phone.trim()) {
+    return res.status(400).json({ message: 'Office Address, Email, and Phone are required fields.' });
+  }
+
   try {
     const existing = await prisma.contactDetails.findFirst({
       where: { deletedAt: null }
@@ -49,8 +53,16 @@ const updateContactDetails = async (req, res) => {
 
     let updated;
     const data = {
-      officeAddress, email, phone, whatsApp, googleMapsUrl, workingHours,
-      socialFacebook, socialTwitter, socialLinkedin, socialInsta
+      officeAddress: officeAddress.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      whatsApp: whatsApp ? whatsApp.trim() : '',
+      googleMapsUrl: googleMapsUrl ? googleMapsUrl.trim() : '',
+      workingHours: workingHours ? workingHours.trim() : '',
+      socialFacebook: socialFacebook ? socialFacebook.trim() : '',
+      socialTwitter: socialTwitter ? socialTwitter.trim() : '',
+      socialLinkedin: socialLinkedin ? socialLinkedin.trim() : '',
+      socialInsta: socialInsta ? socialInsta.trim() : ''
     };
 
     if (existing) {
@@ -66,7 +78,7 @@ const updateContactDetails = async (req, res) => {
       data: {
         action: 'UPDATE_CONTACT_INFO',
         details: 'Updated office contact details and social links',
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 
@@ -76,7 +88,6 @@ const updateContactDetails = async (req, res) => {
     res.status(500).json({ message: 'Failed to update contact details.' });
   }
 };
-
 
 // ==========================================
 // CONTACT MESSAGES / INQUIRIES (CRUD & EXPORT)
@@ -140,30 +151,42 @@ const getMessages = async (req, res) => {
 const submitMessage = async (req, res) => {
   const { name, email, phone, subject, message } = req.body;
 
-  try {
-    if (!name || !email || !message) {
-      return res.status(400).json({ message: 'Please fill in Name, Email and Message.' });
-    }
+  if (!name || !name.trim() || !email || !email.trim() || !message || !message.trim()) {
+    return res.status(400).json({ message: 'Please fill in Name, Email and Message.' });
+  }
 
+  try {
     const inquiry = await prisma.contactMessage.create({
       data: {
-        name,
-        email,
-        phone: phone || '',
-        subject: subject || 'General Architecture Inquiry',
-        message
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone ? phone.trim() : '',
+        subject: subject ? subject.trim() : 'General Architecture Inquiry',
+        message: message.trim()
       }
     });
 
+    // Create Notification for Super Admins
+    const NotificationService = require('../services/notification.service');
+    await NotificationService.createNotification({
+      recipientRole: 'SUPER_ADMIN',
+      type: 'CONTACT_INQUIRY',
+      title: 'New Contact Inquiry',
+      message: `${name.trim()} submitted a contact inquiry.`,
+      entityType: 'ContactMessage',
+      entityId: inquiry.id,
+      priority: 'HIGH',
+    });
+
     // Send email to admin
-    const emailSubject = `[New Client Inquiry] ${subject || 'ArchStudio Contact Form'}`;
+    const emailSubject = `[New Client Inquiry] ${subject || " Contact Form"}`;
     const emailText = `Hello Admin,\n\nYou have received a new contact inquiry from your website.\n\n` + 
                       `Name: ${name}\n` +
                       `Email: ${email}\n` +
                       `Phone: ${phone || 'N/A'}\n` +
                       `Subject: ${subject || 'N/A'}\n\n` +
                       `Message:\n${message}\n\n` +
-                      `Manage this message on the Admin Panel: http://localhost:5173/admin/contact-messages`;
+                      `Manage this message on the Admin Panel: ${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/contact-messages`;
     
     const emailHtml = `<h3>New Contact Inquiry Received</h3>
                        <p>Hello Admin,</p>
@@ -176,7 +199,7 @@ const submitMessage = async (req, res) => {
                        </table>
                        <p><strong>Message Details:</strong></p>
                        <p style="background: #f4f4f4; padding: 10px; border-radius: 4px;">${message.replace(/\n/g, '<br>')}</p>
-                       <p><a href="http://localhost:5173/admin/contact-messages">View in Admin Dashboard</a></p>`;
+                       <p><a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/contact-messages">View in Admin Dashboard</a></p>`;
 
     await sendAdminNotification({
       subject: emailSubject,
@@ -200,7 +223,20 @@ const updateMessageStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body; // READ or REPLIED or UNREAD
 
+  const validStatuses = ['UNREAD', 'READ', 'REPLIED'];
+  if (!status || !validStatuses.includes(status)) {
+    return res.status(400).json({ message: 'Status must be UNREAD, READ, or REPLIED.' });
+  }
+
   try {
+    const existing = await prisma.contactMessage.findFirst({
+      where: { id, deletedAt: null }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: 'Message not found.' });
+    }
+
     const updated = await prisma.contactMessage.update({
       where: { id },
       data: { status }
@@ -216,6 +252,14 @@ const updateMessageStatus = async (req, res) => {
 const deleteMessage = async (req, res) => {
   const { id } = req.params;
   try {
+    const existing = await prisma.contactMessage.findFirst({
+      where: { id, deletedAt: null }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: 'Message not found.' });
+    }
+
     const deleted = await prisma.contactMessage.update({
       where: { id },
       data: { deletedAt: new Date() }
@@ -225,7 +269,7 @@ const deleteMessage = async (req, res) => {
       data: {
         action: 'DELETE_MESSAGE',
         details: `Soft-deleted contact message from ${deleted.name}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 

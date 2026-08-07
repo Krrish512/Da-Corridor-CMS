@@ -4,6 +4,7 @@ import { Star, Quote, CheckCircle2, User } from 'lucide-react';
 
 import { useToast } from '../../context/ToastContext';
 import api from '../../utils/api';
+import SEO from '../../components/common/SEO';
 
 const Comments = () => {
   const queryClient = useQueryClient();
@@ -15,8 +16,6 @@ const Comments = () => {
   // Form State
   const [formData, setFormData] = useState({
     clientName: '',
-    company: '',
-    designation: '',
     rating: 5,
     review: '',
   });
@@ -24,6 +23,7 @@ const Comments = () => {
   const { data: testimonials, isLoading } = useQuery({
     queryKey: ['publicTestimonials'],
     queryFn: () => api.get('/testimonials').then(res => res.data || []),
+    staleTime: 1000 * 60 * 5,
   });
 
   // Filter out only active testimonials
@@ -42,8 +42,6 @@ const Comments = () => {
       // Reset form
       setFormData({
         clientName: '',
-        company: '',
-        designation: '',
         rating: 5,
         review: '',
       });
@@ -149,28 +147,7 @@ const Comments = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block mb-1">Company</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. Acme Corp"
-                        value={formData.company}
-                        onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-                        className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block mb-1">Role</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. Director"
-                        value={formData.designation}
-                        onChange={(e) => setFormData(prev => ({ ...prev, designation: e.target.value }))}
-                        className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white"
-                      />
-                    </div>
-                  </div>
+
 
                   <div>
                     <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block mb-2">Rating</label>
@@ -196,7 +173,7 @@ const Comments = () => {
                     <textarea 
                       rows="4"
                       required
-                      placeholder="Share your thoughts about working with ArchStudio..."
+                      placeholder="Share your thoughts about working with Da' Corridor..."
                       value={formData.review}
                       onChange={(e) => setFormData(prev => ({ ...prev, review: e.target.value }))}
                       className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white"

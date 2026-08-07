@@ -15,11 +15,16 @@ const getFAQs = async (req, res) => {
 
 const createFAQ = async (req, res) => {
   const { question, answer, displayOrder } = req.body;
+
+  if (!question || !question.trim() || !answer || !answer.trim()) {
+    return res.status(400).json({ message: 'Question and Answer are required fields.' });
+  }
+
   try {
     const faq = await prisma.fAQ.create({
       data: {
-        question,
-        answer,
+        question: question.trim(),
+        answer: answer.trim(),
         displayOrder: parseInt(displayOrder || '0', 10)
       }
     });
@@ -28,7 +33,7 @@ const createFAQ = async (req, res) => {
       data: {
         action: 'CREATE_FAQ',
         details: `Created FAQ: "${question.substring(0, 45)}..."`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 
@@ -42,12 +47,25 @@ const createFAQ = async (req, res) => {
 const updateFAQ = async (req, res) => {
   const { id } = req.params;
   const { question, answer, displayOrder } = req.body;
+
+  if (!question || !question.trim() || !answer || !answer.trim()) {
+    return res.status(400).json({ message: 'Question and Answer are required fields.' });
+  }
+
   try {
+    const existing = await prisma.fAQ.findFirst({
+      where: { id, deletedAt: null }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: 'FAQ not found.' });
+    }
+
     const faq = await prisma.fAQ.update({
       where: { id },
       data: {
-        question,
-        answer,
+        question: question.trim(),
+        answer: answer.trim(),
         displayOrder: parseInt(displayOrder || '0', 10)
       }
     });
@@ -56,7 +74,7 @@ const updateFAQ = async (req, res) => {
       data: {
         action: 'UPDATE_FAQ',
         details: `Updated FAQ: "${question.substring(0, 45)}..."`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 
@@ -70,6 +88,14 @@ const updateFAQ = async (req, res) => {
 const deleteFAQ = async (req, res) => {
   const { id } = req.params;
   try {
+    const existing = await prisma.fAQ.findFirst({
+      where: { id, deletedAt: null }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: 'FAQ not found.' });
+    }
+
     const faq = await prisma.fAQ.update({
       where: { id },
       data: { deletedAt: new Date() }
@@ -79,7 +105,7 @@ const deleteFAQ = async (req, res) => {
       data: {
         action: 'DELETE_FAQ',
         details: `Soft-deleted FAQ: "${faq.question.substring(0, 45)}..."`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 

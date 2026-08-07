@@ -1,4 +1,5 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Star, Users, Link2, Plus, Edit2, Trash2, X, ToggleLeft, ToggleRight,
@@ -8,17 +9,46 @@ import {
 import { useToast } from '../context/ToastContext';
 import api from '../utils/api';
 
+import { StatusBadge } from '../components/cms/StatusBadge';
+import { useAuth } from '../context/AuthContext';
+import MediaPicker from '../components/ui/media/MediaPicker';
+
+// Derive which tab to show from the current URL path
+const getTabFromPath = (pathname) => {
+  const segment = pathname.split('/').pop();
+  const valid = ['testimonials', 'team', 'partners'];
+  return valid.includes(segment) ? segment : 'testimonials';
+};
+
 const TestimonialsTeamPartners = () => {
   const queryClient = useQueryClient();
   const { addToast } = useToast();
+  const { user: currentUser } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Tab views: 'testimonials' | 'team' | 'partners'
-  const [activeTab, setActiveTab] = useState('testimonials');
+  const [activeTab, setActiveTab] = useState(() => getTabFromPath(location.pathname));
+
+  // Sync tab when navigating between these routes
+  useEffect(() => {
+    setActiveTab(getTabFromPath(location.pathname));
+  }, [location.pathname]);
 
   // Modal controls
   const [testModalOpen, setTestModalOpen] = useState(false);
   const [editingTest, setEditingTest] = useState(null);
-  const [testForm, setTestForm] = useState({ clientName: '', company: '', designation: '', profileImage: '', rating: 5, review: '', isActive: true });
+  const initialTestForm = {
+    clientName: '',
+    company: '',
+    designation: '',
+    profileImage: '',
+    rating: 5,
+    review: '',
+    isActive: true,
+    publishingStatus: currentUser?.role === 'CO_ADMIN' ? 'PENDING_APPROVAL' : 'PUBLISHED',
+  };
+  const [testForm, setTestForm] = useState(initialTestForm);
 
   const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState(null);
@@ -137,22 +167,26 @@ const TestimonialsTeamPartners = () => {
 
   const handleTestSubmit = (e) => {
     e.preventDefault();
-    if (testForm.profileImage) {
+    if (!testForm.clientName?.trim() || !testForm.review?.trim()) {
+      addToast('Client Name and Review are required fields.', 'error');
+      return;
     }
     saveTestMutation.mutate(editingTest ? { ...testForm, id: editingTest.id } : testForm);
   };
 
   const handleTeamSubmit = (e) => {
     e.preventDefault();
-    if (teamForm.photo) {
+    if (!teamForm.name?.trim() || !teamForm.position?.trim() || !teamForm.bio?.trim()) {
+      addToast('Name, Position, and Bio are required fields.', 'error');
+      return;
     }
     saveTeamMutation.mutate(editingTeam ? { ...teamForm, id: editingTeam.id } : teamForm);
   };
 
   const handlePartnerSubmit = (e) => {
     e.preventDefault();
-    if (!partnerForm.logo) {
-      addToast('Logo image is required.', 'error');
+    if (!partnerForm.companyName?.trim() || !partnerForm.logo?.trim()) {
+      addToast('Company Name and Logo URL are required fields.', 'error');
       return;
     }
     savePartnerMutation.mutate(editingPartner ? { ...partnerForm, id: editingPartner.id } : partnerForm);
@@ -243,7 +277,7 @@ const TestimonialsTeamPartners = () => {
       {/* Tabs */}
       <div className="flex border-b border-neutral-200 dark:border-neutral-850 gap-6 text-xs font-bold uppercase tracking-wider pb-px">
         <button
-          onClick={() => setActiveTab('testimonials')}
+          onClick={() => navigate('/admin/testimonials')}
           className={`flex items-center gap-2 pb-3 border-b-2 -mb-px transition-all ${
             activeTab === 'testimonials'
               ? 'border-neutral-900 text-neutral-900 dark:border-neutral-100 dark:text-neutral-100'
@@ -254,7 +288,7 @@ const TestimonialsTeamPartners = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('team')}
+          onClick={() => navigate('/admin/team')}
           className={`flex items-center gap-2 pb-3 border-b-2 -mb-px transition-all ${
             activeTab === 'team'
               ? 'border-neutral-900 text-neutral-900 dark:border-neutral-100 dark:text-neutral-100'
@@ -265,7 +299,7 @@ const TestimonialsTeamPartners = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('partners')}
+          onClick={() => navigate('/admin/partners')}
           className={`flex items-center gap-2 pb-3 border-b-2 -mb-px transition-all ${
             activeTab === 'partners'
               ? 'border-neutral-900 text-neutral-900 dark:border-neutral-100 dark:text-neutral-100'
@@ -304,12 +338,25 @@ const TestimonialsTeamPartners = () => {
                       <div>
                         <h4 className="text-xs font-bold">{test.clientName}</h4>
                         <p className="text-[10px] text-neutral-400 font-semibold">{test.company} • {test.designation}</p>
+                        <div className="mt-1">
+                          <StatusBadge status={test.publishingStatus} scheduledPublishAt={test.scheduledPublishAt} />
+                        </div>
                       </div>
                     </div>
 
-                    <button onClick={() => toggleTestActiveMutation.mutate(test)}>
-                      {test.isActive ? <ToggleRight className="w-6 h-6 text-neutral-900 dark:text-white" /> : <ToggleLeft className="w-6 h-6 text-neutral-400" />}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {currentUser?.role !== 'CO_ADMIN' && test.publishingStatus === 'PENDING_APPROVAL' && (
+                        <button
+                          onClick={() => saveTestMutation.mutate({ ...test, publishingStatus: 'PUBLISHED' })}
+                          className="px-2 py-1 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 hover:bg-amber-200"
+                        >
+                          Approve
+                        </button>
+                      )}
+                      <button onClick={() => toggleTestActiveMutation.mutate(test)} title={test.isActive ? 'Deactivate' : 'Activate'}>
+                        {test.isActive ? <ToggleRight className="w-6 h-6 text-neutral-900 dark:text-white" /> : <ToggleLeft className="w-6 h-6 text-neutral-400" />}
+                      </button>
+                    </div>
                   </div>
 
                   {/* Stars */}
@@ -507,13 +554,12 @@ const TestimonialsTeamPartners = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Avatar Photo URL</label>
-              <input
-                type="text"
-                placeholder="https://example.com/image.jpg"
+              <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Avatar Photo</label>
+              <MediaPicker
                 value={testForm.profileImage}
-                onChange={(e) => setTestForm({ ...testForm, profileImage: e.target.value })}
-                className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded-lg py-2 px-3 text-xs focus:outline-none"
+                onChange={(url) => setTestForm({ ...testForm, profileImage: url })}
+                multiple={false}
+                outputFormat="url"
               />
             </div>
 
@@ -573,13 +619,12 @@ const TestimonialsTeamPartners = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Photo URL</label>
-              <input
-                type="text"
-                placeholder="https://example.com/image.jpg"
+              <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Photo</label>
+              <MediaPicker
                 value={teamForm.photo}
-                onChange={(e) => setTeamForm({ ...teamForm, photo: e.target.value })}
-                className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded-lg py-2 px-3 text-xs focus:outline-none"
+                onChange={(url) => setTeamForm({ ...teamForm, photo: url })}
+                multiple={false}
+                outputFormat="url"
               />
             </div>
 
@@ -647,13 +692,12 @@ const TestimonialsTeamPartners = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Logo Image URL</label>
-              <input
-                type="text"
-                placeholder="https://example.com/image.jpg"
+              <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Logo Image</label>
+              <MediaPicker
                 value={partnerForm.logo}
-                onChange={(e) => setPartnerForm({ ...partnerForm, logo: e.target.value })}
-                className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded-lg py-2 px-3 text-xs focus:outline-none"
+                onChange={(url) => setPartnerForm({ ...partnerForm, logo: url })}
+                multiple={false}
+                outputFormat="url"
               />
             </div>
 

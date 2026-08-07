@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Settings, MapPin, Save, Globe, ToggleLeft, ToggleRight
@@ -7,12 +8,27 @@ import {
 import { useToast } from '../context/ToastContext';
 import api from '../utils/api';
 
+// Derive which tab to show from the current URL path
+const getTabFromPath = (pathname) => {
+  const segment = pathname.split('/').pop();
+  if (segment === 'seo') return 'seo';
+  if (segment === 'settings') return 'system';
+  return 'office';
+};
+
 const SettingsSEO = () => {
   const queryClient = useQueryClient();
   const { addToast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Tab navigation state: 'office' | 'system' | 'seo'
-  const [activeTab, setActiveTab] = useState('office');
+  const [activeTab, setActiveTab] = useState(() => getTabFromPath(location.pathname));
+
+  // Sync tab when navigating between these routes
+  useEffect(() => {
+    setActiveTab(getTabFromPath(location.pathname));
+  }, [location.pathname]);
 
   const [websiteLogo, setWebsiteLogo] = useState('');
   const [favicon, setFavicon] = useState('');
@@ -105,11 +121,6 @@ const SettingsSEO = () => {
     const values = Object.fromEntries(formData.entries());
     values.maintenanceMode = systemData?.maintenanceMode;
     
-    if (websiteLogo) {
-    }
-    if (favicon) {
-    }
-
     values.websiteLogo = websiteLogo;
     values.favicon = favicon;
     saveSystemMutation.mutate(values);
@@ -120,9 +131,6 @@ const SettingsSEO = () => {
     const formData = new FormData(e.target);
     const values = Object.fromEntries(formData.entries());
     
-    if (ogImage) {
-    }
-
     values.ogImage = ogImage;
     saveSeoMutation.mutate(values);
   };
@@ -144,7 +152,7 @@ const SettingsSEO = () => {
       {/* Tabs */}
       <div className="flex border-b border-neutral-200 dark:border-neutral-850 gap-6 text-xs font-bold uppercase tracking-wider pb-px">
         <button
-          onClick={() => setActiveTab('office')}
+          onClick={() => navigate('/admin/settings')}
           className={`flex items-center gap-2 pb-3 border-b-2 -mb-px transition-all ${
             activeTab === 'office'
               ? 'border-neutral-900 text-neutral-900 dark:border-neutral-100 dark:text-neutral-100'
@@ -155,7 +163,7 @@ const SettingsSEO = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('system')}
+          onClick={() => navigate('/admin/settings')}
           className={`flex items-center gap-2 pb-3 border-b-2 -mb-px transition-all ${
             activeTab === 'system'
               ? 'border-neutral-900 text-neutral-900 dark:border-neutral-100 dark:text-neutral-100'
@@ -166,14 +174,14 @@ const SettingsSEO = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('seo')}
+          onClick={() => navigate('/admin/seo')}
           className={`flex items-center gap-2 pb-3 border-b-2 -mb-px transition-all ${
             activeTab === 'seo'
               ? 'border-neutral-900 text-neutral-900 dark:border-neutral-100 dark:text-neutral-100'
               : 'border-transparent text-neutral-400 hover:text-neutral-950 dark:hover:text-neutral-300'
           }`}
         >
-          <Globe className="w-4 h-4" /> Homepage SEO & Sitemap
+          <Globe className="w-4 h-4" /> Homepage SEO
         </button>
       </div>
 
@@ -183,7 +191,7 @@ const SettingsSEO = () => {
 
       {/* Tab 1: Office Contact Info */}
       {activeTab === 'office' && (
-        <form onSubmit={handleDetailsSubmit} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-6 shadow-premium max-w-3xl space-y-6">
+        <form onSubmit={handleDetailsSubmit} className="stat-card max-w-3xl space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="col-span-2 space-y-1">
               <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Office Address</label>
@@ -282,7 +290,7 @@ const SettingsSEO = () => {
 
       {/* Tab 2: Global settings */}
       {activeTab === 'system' && (
-        <form onSubmit={handleSystemSubmit} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-6 shadow-premium max-w-xl space-y-6">
+        <form onSubmit={handleSystemSubmit} className="stat-card max-w-xl space-y-6">
           
           {/* Maintenance alert block */}
           <div className="flex items-center justify-between bg-neutral-50 dark:bg-neutral-850 p-4 rounded-lg border">
@@ -372,7 +380,7 @@ const SettingsSEO = () => {
 
       {/* Tab 3: SEO Configurations */}
       {activeTab === 'seo' && (
-        <form onSubmit={handleSeoSubmit} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-6 shadow-premium max-w-3xl space-y-6">
+        <form onSubmit={handleSeoSubmit} className="stat-card max-w-3xl space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="col-span-2 space-y-1">
               <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Homepage Browser Title</label>
@@ -433,26 +441,6 @@ const SettingsSEO = () => {
                 name="searchConsoleVerification"
                 defaultValue={seoData?.searchConsoleVerification}
                 className="w-full bg-neutral-50 border rounded-lg py-2 px-3 text-xs focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Robots.txt Schema</label>
-              <textarea
-                rows={4}
-                name="robotsText"
-                defaultValue={seoData?.robotsText}
-                className="w-full bg-neutral-50 border rounded-lg p-2.5 text-xs font-mono resize-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Sitemap.xml Schema</label>
-              <textarea
-                rows={4}
-                name="sitemapXml"
-                defaultValue={seoData?.sitemapXml}
-                className="w-full bg-neutral-50 border rounded-lg p-2.5 text-xs font-mono resize-none"
               />
             </div>
           </div>

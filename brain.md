@@ -1,4 +1,4 @@
-# brain.md — ArchStudio Portfolio CMS
+# brain.md — Da' Corridor Portfolio CMS
 
 > Single source of truth for AI coding agents. Last verified against codebase: 2026-07-10 (full dev environment + database analysis).
 
@@ -6,14 +6,14 @@
 
 ## 1. Project Purpose
 
-**ArchStudio Portfolio CMS** is a full-stack content management system for an architecture firm's portfolio website. It powers both:
+**Da' Corridor Portfolio CMS** is a full-stack content management system for an architecture firm's portfolio website. It powers both:
 
 - **Public website** — A client-facing portfolio site showcasing projects, services, team, blog, testimonials, and contact.
 - **Admin CMS dashboard** — A protected panel where administrators manage all website content, view analytics, handle inquiries, and configure SEO/system settings.
 
 **Primary users**: Architecture firm administrators (CMS), general public (website visitors).
 
-**Brand identity**: "ArchStudio" — premium minimalist architecture practice. UI inspired by Vercel, Linear, and Notion dashboards.
+**Brand identity**: "Da' Corridor" — premium minimalist architecture practice. UI inspired by Vercel, Linear, and Notion dashboards.
 
 ---
 
@@ -381,13 +381,13 @@ Testimonials submitted via public endpoint with `optionalProtect` middleware: if
 | `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/arch_cms?schema=public` | PostgreSQL connection string |
 | `JWT_SECRET` | `arch_portfolio_cms_secret_key_2026_unbreakable_secret` | JWT signing secret |
 | `JWT_EXPIRE` | `3h` | Token expiration duration |
-| `ADMIN_EMAIL` | `admin@archstudio.com` | Admin notification recipient |
+| `ADMIN_EMAIL` | `admin@dacorridor.com` | Admin notification recipient |
 | `ADMIN_PASSWORD` | `admin123` | Referenced in seed only |
 | `SMTP_HOST` | `smtp.mailtrap.io` | SMTP server host |
 | `SMTP_PORT` | `2525` | SMTP server port |
 | `SMTP_USER` | *(empty)* | SMTP username (empty = console fallback) |
 | `SMTP_PASS` | *(empty)* | SMTP password |
-| `SENDER_EMAIL` | `noreply@archstudio.com` | Email "from" address |
+| `SENDER_EMAIL` | `noreply@dacorridor.com` | Email "from" address |
 | `NODE_ENV` | *(unset)* | If `development`, enables Prisma query logging and error stacks |
 
 ### Frontend
@@ -448,7 +448,7 @@ res.json({ data, meta: { total, page, limit, totalPages } });
 Every CMS write appends to `ActivityLog`:
 ```js
 await prisma.activityLog.create({
-  data: { action: 'ACTION_NAME', details: '...', userEmail: req.user?.email || 'admin@archstudio.com' }
+  data: { action: 'ACTION_NAME', details: '...', userEmail: req.user?.email || 'admin@dacorridor.com' }
 });
 ```
 
@@ -497,7 +497,7 @@ Client pages map string icon names to Lucide components via an `iconMap` object.
 
 ## 18. Performance Considerations
 
-- **Prisma query logging**: Enabled in development via `log: ['query', 'info', 'warn', 'error']`, disabled in production (only `'error'`)
+- **Prisma query logging**: Enabled in development via `log: ['warn', 'error']`, disabled in production (only `'error'`)
 - **Concurrent queries**: Dashboard stats and paginated lists use `Promise.all` for parallel DB queries
 - **JSON body limit**: Set to 100MB (`express.json({ limit: '100mb' })`) to support large payloads
 - **React Query caching**: Default cache with `refetchOnWindowFocus: false` reduces unnecessary API calls
@@ -562,7 +562,8 @@ npx prisma generate                     # Generate Prisma client
 npx prisma db push                      # Push schema to DB (no migration)
 npx prisma migrate dev                  # Run migrations in dev
 npx prisma migrate status               # Check migration status vs DB
-npm run prisma:seed                     # Seed database with mock data
+npm run prisma:seed                     # Seed database with application data (NO user accounts)
+node scripts/createAdmin.js             # Initializes/synchronizes SUPER_ADMIN from INITIAL_ADMIN_* in .env & purges legacy dev accounts
 npm run dev                             # Start dev server (nodemon, port 5000)
 npm start                               # Start production server
 
@@ -989,5 +990,30 @@ Admin later views → GET /api/contact/messages (protected)
   - *Issue*: During new project creation, uploading gallery images triggered "Gallery Image: Image URL cannot be empty." on submission.
   - *Cause*: `MediaPicker` mapped uploads to string URLs instead of `{ url, order }` objects if the initial state array was empty (as `currentItems.length > 0` failed). Frontend validation strictly checked `img.url` which was undefined for string items.
   - *Fix*: Modified `MediaPicker.jsx` to default `isObjectArray` to `true` when the current gallery items list is empty, ensuring it yields `{ url, order }` objects matching the expected schema.
+
+## 32. Phase 6: Production & Security Hardening (2026-07-21)
+
+### Milestone: Enterprise Security, Monitoring, Backup & Production Gate
+- **Status**: ✅ Completed & Verified — Classified as 🟢 **READY FOR PRODUCTION**
+- **Security Enhancements**:
+  - **Rate Limiting ([rateLimiter.js](file:///d:/ArchStudioCMS/backend/src/middleware/rateLimiter.js))**: Added configurable limiters for authentication (10/15m), uploads (15/m), public contact/newsletter forms (5/10m), and general API endpoints (120/m) returning `HTTP 429` & `Retry-After` headers.
+  - **Security Headers ([securityHeaders.js](file:///d:/ArchStudioCMS/backend/src/middleware/securityHeaders.js))**: Installed and configured `helmet` with Content Security Policy (CSP), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: SAMEORIGIN`, and HSTS.
+  - **File Upload Security ([upload.middleware.js](file:///d:/ArchStudioCMS/backend/src/middleware/upload.middleware.js))**: Added binary magic byte header validation (`verifyFileMagicBytes`) and filename sanitization. Spoofed executable uploads are unlinked immediately.
+  - **CSRF Immunity**: Documented stateless JWT Authorization Header security model (`Bearer <token>`).
+- **Logging & Monitoring**:
+  - **Structured Logger ([logger.js](file:///d:/ArchStudioCMS/backend/src/utils/logger.js))**: Environment-aware JSON logger with correlation IDs (`X-Request-ID`) attached via [requestId.js](file:///d:/ArchStudioCMS/backend/src/middleware/requestId.js) and sensitive parameter masking.
+  - **Centralized Error Handler ([errorHandler.js](file:///d:/ArchStudioCMS/backend/src/middleware/errorHandler.js))**: Standard error payload format `{ error: { id, message, code, timestamp } }` with `ActivityLog` audit logging for 5xx errors.
+  - **Health Endpoints ([health.controller.js](file:///d:/ArchStudioCMS/backend/src/controllers/health.controller.js))**: Implemented `GET /api/health` (DB status & latency, memory RSS/heap, uptime), `GET /api/health/ready` (load balancer readiness), and `GET /api/health/live` (liveness probe).
+- **System Backup & Recovery**:
+  - **Backup Engine ([backup.js](file:///d:/ArchStudioCMS/backend/src/utils/backup.js))**: Database JSON dumps & media archives restricted exclusively to `SUPER_ADMIN`.
+  - **Super Admin UI ([SystemBackup.jsx](file:///d:/ArchStudioCMS/frontend/src/pages/SystemBackup.jsx))**: Backup dashboard at `/admin/backups`.
+- **Deployment Hardening**:
+  - **Startup Fail-Fast Validator ([envValidator.js](file:///d:/ArchStudioCMS/backend/src/utils/envValidator.js))**: Halts startup if mandatory `.env` variables (`DATABASE_URL`, `JWT_SECRET`) are missing.
+  - **Server Hardening ([server.js](file:///d:/ArchStudioCMS/backend/src/server.js))**: `app.set('trust proxy', true)` for Nginx/Cloudflare, Gzip compression, and graceful `SIGTERM`/`SIGINT` shutdown handlers.
+- **Pre-Release Production Audit**:
+  - `npx prisma validate`: Schema is valid 🚀
+  - `npm audit --audit-level=high`: 0 High/Critical vulnerabilities found in frontend and backend.
+  - `npm run build`: Compiled cleanly in 1.49s with 0 errors.
+
 
 

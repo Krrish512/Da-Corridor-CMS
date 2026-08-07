@@ -2,14 +2,20 @@ const prisma = require('../utils/db');
 
 const getDashboardStats = async (req, res) => {
   try {
-    // 1. Counters
+    const currentYear = new Date().getFullYear();
+
+    // Execute ALL independent database queries concurrently in a single Promise.all
     const [
       totalProjects,
       totalServices,
       totalTestimonials,
       totalBlogPosts,
       unreadMessages,
-      totalSubscribers
+      totalSubscribers,
+      projects,
+      inquiries,
+      latestMessages,
+      recentActivity
     ] = await Promise.all([
       prisma.project.count({ where: { deletedAt: null } }),
       prisma.service.count({ where: { deletedAt: null } }),
@@ -17,14 +23,32 @@ const getDashboardStats = async (req, res) => {
       prisma.blogPost.count({ where: { deletedAt: null } }),
       prisma.contactMessage.count({ where: { deletedAt: null, status: 'UNREAD' } }),
       prisma.newsletterSubscriber.count({ where: { deletedAt: null } }),
+      prisma.project.findMany({
+        where: { deletedAt: null },
+        select: { category: true }
+      }),
+      prisma.contactMessage.findMany({
+        where: {
+          deletedAt: null,
+          createdAt: {
+            gte: new Date(`${currentYear}-01-01`),
+            lte: new Date(`${currentYear}-12-31`),
+          }
+        },
+        select: { createdAt: true }
+      }),
+      prisma.contactMessage.findMany({
+        where: { deletedAt: null },
+        orderBy: { createdAt: 'desc' },
+        take: 5
+      }),
+      prisma.activityLog.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 10
+      })
     ]);
 
-    // 2. Projects by category
-    const projects = await prisma.project.findMany({
-      where: { deletedAt: null },
-      select: { category: true }
-    });
-    
+    // 2. Projects by category aggregation
     const categoryCounts = {};
     projects.forEach(p => {
       categoryCounts[p.category] = (categoryCounts[p.category] || 0) + 1;
@@ -35,19 +59,7 @@ const getDashboardStats = async (req, res) => {
       value
     }));
 
-    // 3. Monthly inquiries (mock analytics generated from recent inquiries of current year)
-    const currentYear = new Date().getFullYear();
-    const inquiries = await prisma.contactMessage.findMany({
-      where: {
-        deletedAt: null,
-        createdAt: {
-          gte: new Date(`${currentYear}-01-01`),
-          lte: new Date(`${currentYear}-12-31`),
-        }
-      },
-      select: { createdAt: true }
-    });
-
+    // 3. Monthly inquiries aggregation
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const monthlyInquiriesCount = Array(12).fill(0);
     
@@ -60,19 +72,6 @@ const getDashboardStats = async (req, res) => {
       name,
       inquiries: monthlyInquiriesCount[index]
     }));
-
-    // 4. Latest Contact Messages
-    const latestMessages = await prisma.contactMessage.findMany({
-      where: { deletedAt: null },
-      orderBy: { createdAt: 'desc' },
-      take: 5
-    });
-
-    // 5. Recent Activity Logs
-    const recentActivity = await prisma.activityLog.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 10
-    });
 
     res.json({
       summary: {

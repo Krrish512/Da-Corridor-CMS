@@ -1,0 +1,59 @@
+const { ROLES } = require('./roles');
+const { PERMISSIONS } = require('./permissions');
+
+const PERMISSION_MATRIX = Object.freeze({
+  [ROLES.SUPER_ADMIN]: Object.values(PERMISSIONS),
+
+  [ROLES.ADMIN]: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.HERO_MANAGE,
+    PERMISSIONS.ABOUT_MANAGE,
+    PERMISSIONS.SERVICES_MANAGE,
+    PERMISSIONS.PORTFOLIO_READ,
+    PERMISSIONS.PORTFOLIO_CREATE,
+    PERMISSIONS.PORTFOLIO_UPDATE,
+    PERMISSIONS.PORTFOLIO_DELETE,
+    PERMISSIONS.GALLERY_MANAGE,
+    PERMISSIONS.BLOG_MANAGE,
+    PERMISSIONS.CONTACT_MANAGE,
+    PERMISSIONS.NEWSLETTER_MANAGE,
+    PERMISSIONS.SEO_MANAGE,
+    PERMISSIONS.SETTINGS_MANAGE,
+    PERMISSIONS.SYSTEM_LOGS_VIEW,
+    PERMISSIONS.USERS_MANAGE, // Allow ADMIN to manage ADMIN & CO_ADMIN users (SUPER_ADMIN assignment protected at controller level)
+    PERMISSIONS.PROFILE_UPDATE,
+  ],
+
+  [ROLES.CO_ADMIN]: [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.HERO_MANAGE,
+    PERMISSIONS.ABOUT_MANAGE,
+    PERMISSIONS.SERVICES_MANAGE,
+    PERMISSIONS.PORTFOLIO_READ,
+    PERMISSIONS.PORTFOLIO_CREATE,
+    PERMISSIONS.PORTFOLIO_UPDATE,
+    PERMISSIONS.GALLERY_MANAGE,
+    PERMISSIONS.BLOG_MANAGE,
+    PERMISSIONS.CONTACT_MANAGE,
+    PERMISSIONS.NEWSLETTER_MANAGE,
+    PERMISSIONS.PROFILE_UPDATE,
+  ],
+});
+
+/**
+ * Checks if a given role has a specific permission.
+ */
+const hasPermission = (role, permission) => {
+  if (!role) return false;
+  if (role === ROLES.SUPER_ADMIN) return true;
+
+  const rolePermissions = PERMISSION_MATRIX[role];
+  if (!rolePermissions) return false;
+
+  return rolePermissions.includes(permission);
+};
+
+module.exports = {
+  PERMISSION_MATRIX,
+  hasPermission,
+};

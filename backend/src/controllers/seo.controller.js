@@ -1,4 +1,4 @@
-﻿const prisma = require('../utils/db');
+const prisma = require('../utils/db');
 
 const getSEOSettings = async (req, res) => {
   try {
@@ -9,14 +9,12 @@ const getSEOSettings = async (req, res) => {
     if (!seo) {
       seo = await prisma.sEOSettings.create({
         data: {
-          homepageTitle: "ArchStudio | Modern Architecture & Design Studio",
-          metaDescription: "ArchStudio is a leading architecture practice delivering sustainable, custom commercial and residential designs.",
+          homepageTitle: "Da' Corridor | Modern Architecture & Design Studio",
+          metaDescription: "Da' Corridor is a leading architecture practice delivering sustainable, custom commercial and residential designs.",
           keywords: "architecture, portfolio, design, builder, modern home, sustainable building",
           ogImage: "/uploads/default-og.jpg",
           googleAnalyticsId: "UA-XXXXXXXXX-X",
-          searchConsoleVerification: "",
-          robotsText: "User-agent: *\nAllow: /",
-          sitemapXml: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n  <url>\n    <loc>https://archstudio.com/</loc>\n  </url>\n</urlset>"
+          searchConsoleVerification: ""
         }
       });
     }
@@ -31,21 +29,26 @@ const getSEOSettings = async (req, res) => {
 const updateSEOSettings = async (req, res) => {
   const {
     homepageTitle, metaDescription, keywords, ogImage,
-    googleAnalyticsId, searchConsoleVerification, robotsText, sitemapXml
+    googleAnalyticsId, searchConsoleVerification
   } = req.body;
+
+  if (!homepageTitle || !homepageTitle.trim() || !metaDescription || !metaDescription.trim()) {
+    return res.status(400).json({ message: 'Homepage Title and Meta Description are required fields.' });
+  }
 
   try {
     const existing = await prisma.sEOSettings.findFirst({
       where: { deletedAt: null }
     });
 
-    // Validate ogImage URL
-    if (ogImage) {
-    }
     let updated;
     const data = {
-      homepageTitle, metaDescription, keywords, ogImage,
-      googleAnalyticsId, searchConsoleVerification, robotsText, sitemapXml
+      homepageTitle: homepageTitle.trim(),
+      metaDescription: metaDescription.trim(),
+      keywords: keywords ? keywords.trim() : '',
+      ogImage: ogImage ? ogImage.trim() : null,
+      googleAnalyticsId: googleAnalyticsId ? googleAnalyticsId.trim() : '',
+      searchConsoleVerification: searchConsoleVerification ? searchConsoleVerification.trim() : ''
     };
 
     if (existing) {
@@ -60,8 +63,8 @@ const updateSEOSettings = async (req, res) => {
     await prisma.activityLog.create({
       data: {
         action: 'UPDATE_SEO_SETTINGS',
-        details: 'Updated global SEO meta and XML configurations',
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        details: 'Updated global SEO meta configurations',
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 

@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/auth.middleware');
-const upload = require('../middleware/upload.middleware');
+const { upload, verifyFileMagicBytes, optimizeImage } = require('../middleware/upload.middleware');
+const { uploadLimiter } = require('../middleware/rateLimiter');
 const {
   getGalleryItems,
   addGalleryItem,
@@ -11,9 +12,9 @@ const {
 // Public query
 router.get('/', getGalleryItems);
 
-// Protected upload and delete
-// Binds multer single file upload targeting key 'file'
-router.post('/', protect, upload.single('file'), addGalleryItem);
+// Protected upload and delete with upload rate limiter, magic byte inspection, and image optimization
+router.post('/', protect, uploadLimiter, upload.single('file'), verifyFileMagicBytes, optimizeImage, addGalleryItem);
 router.delete('/:id', protect, deleteGalleryItem);
 
 module.exports = router;
+

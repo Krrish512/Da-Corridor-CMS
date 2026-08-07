@@ -1,21 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Sun, Moon, Menu, X, ArrowUpRight, MapPin, Phone, Mail } from 'lucide-react';
+import { Sun, Moon, Menu, X, MapPin, Phone, Mail } from 'lucide-react';
 
 import api from '../../utils/api';
+import PageTransition from '../../components/layout/PageTransition';
 
 const navLinks = [
-  { path: '/',          label: 'Home'      },
-  { path: '/about',     label: 'About'     },
-  { path: '/services',  label: 'Services'  },
+  { path: '/', label: 'Home' },
+  { path: '/about', label: 'About' },
+  { path: '/services', label: 'Services' },
   { path: '/portfolio', label: 'Portfolio' },
-  { path: '/blog',      label: 'Blog'      },
-  { path: '/comments',  label: 'Reviews'   },
-  { path: '/contact',   label: 'Contact'   },
+  { path: '/blog', label: 'Blog' },
+  { path: '/comments', label: 'Reviews' },
+  { path: '/contact', label: 'Contact' },
 ];
 
 const ClientLayout = () => {
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -39,6 +41,35 @@ const ClientLayout = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Global Keyboard Shortcut: Ctrl + Shift + A (Windows/Linux) or Cmd + Shift + A (macOS)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+      const isShift = e.shiftKey;
+      const isKeyA = e.code === 'KeyA' || (e.key && e.key.toLowerCase() === 'a');
+
+      if (isCtrlOrCmd && isShift && isKeyA) {
+        const active = document.activeElement;
+        const isInput =
+          active &&
+          (active.tagName === 'INPUT' ||
+            active.tagName === 'TEXTAREA' ||
+            active.tagName === 'SELECT' ||
+            active.isContentEditable ||
+            active.getAttribute('contenteditable') === 'true');
+
+        if (!isInput) {
+          e.preventDefault();
+          e.stopPropagation();
+          navigate('/admin/login');
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [navigate]);
+
   const toggleDarkMode = () => {
     const next = !darkMode;
     setDarkMode(next);
@@ -59,7 +90,7 @@ const ClientLayout = () => {
         className="sticky top-0 z-50 transition-all duration-300"
         style={{
           background: darkMode
-            ? (scrolled ? 'rgba(26,26,26,0.97)' : '#1A1A1A')
+            ? (scrolled ? 'rgba(26,26,26,0.97)' : '#2f2f2fff')
             : (scrolled ? 'rgba(255,255,255,0.97)' : '#ffffff'),
           borderBottom: darkMode
             ? '1px solid rgba(255,255,255,0.08)'
@@ -74,13 +105,13 @@ const ClientLayout = () => {
           <Link to="/" className="flex items-center gap-3 group">
             <div
               className="h-9 w-9 rounded flex items-center justify-center font-display font-bold text-sm transition-all duration-200 group-hover:scale-105"
-              style={{ background: '#0A2540', color: '#D4AF37' }}
+              style={{ background: 'transparent', color: '#D4AF37' }}
             >
-              Da'
+              <img src="/Da' Corridor.png" alt="Logo" className="h-full w-full object-contain" />
             </div>
             <div>
               <span className="font-display font-bold text-lg tracking-widest uppercase" style={{ color: darkMode ? '#ffffff' : '#0A2540' }}>
-                ArchStudio
+                Da' Corridor.
               </span>
               <div className="hidden sm:block h-0.5 w-0 group-hover:w-full transition-all duration-300" style={{ background: '#D4AF37' }} />
             </div>
@@ -94,8 +125,7 @@ const ClientLayout = () => {
                 to={link.path}
                 end={link.path === '/'}
                 className={({ isActive }) =>
-                  `text-sm font-medium tracking-wide transition-all duration-200 relative pb-1 ${
-                    isActive ? 'font-semibold' : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+                  `text-sm font-medium tracking-wide transition-all duration-200 relative pb-1 ${isActive ? 'font-semibold' : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
                   }`
                 }
                 style={({ isActive }) => isActive ? { color: darkMode ? '#D4AF37' : '#0A2540' } : {}}
@@ -125,30 +155,24 @@ const ClientLayout = () => {
             >
               {darkMode ? <Sun size={16} style={{ color: '#D4AF37' }} /> : <Moon size={16} />}
             </button>
-            <Link
-              to="/admin/dashboard"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded transition-all duration-200"
-              style={{ background: '#D4AF37', color: '#0A2540' }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#B8941F'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#D4AF37'; e.currentTarget.style.transform = 'none'; }}
-            >
-              Portal Login <ArrowUpRight size={13} />
-            </Link>
           </div>
 
           {/* Mobile menu trigger */}
           <div className="flex md:hidden items-center gap-3">
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-full border transition-colors"
+              className="p-2 rounded-full border transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
               style={{ borderColor: darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(10,37,64,0.15)' }}
+              aria-label="Toggle Dark Mode"
             >
               {darkMode ? <Sun size={16} style={{ color: '#D4AF37' }} /> : <Moon size={16} />}
             </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 transition-colors"
+              className="p-2 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
               style={{ color: darkMode ? '#ffffff' : '#0A2540' }}
+              aria-label="Toggle Navigation Menu"
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
@@ -170,9 +194,13 @@ const ClientLayout = () => {
           >
             <div className="flex items-center justify-between mb-10">
               <span className="font-display font-bold text-base tracking-widest uppercase text-white">
-                ArchStudio
+                Da' Corridor
               </span>
-              <button onClick={() => setMobileMenuOpen(false)} className="text-white/60 hover:text-white p-1">
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-white/60 hover:text-white p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                aria-label="Close Navigation Menu"
+              >
                 <X size={20} />
               </button>
             </div>
@@ -184,7 +212,7 @@ const ClientLayout = () => {
                   to={link.path}
                   end={link.path === '/'}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-base font-medium tracking-wider py-2.5 transition-all duration-200 border-b"
+                  className="text-base font-medium tracking-wider py-3 min-h-[44px] flex items-center transition-all duration-200 border-b"
                   style={({ isActive }) => ({
                     color: isActive ? '#D4AF37' : 'rgba(255,255,255,0.75)',
                     borderColor: 'rgba(255,255,255,0.06)',
@@ -194,24 +222,15 @@ const ClientLayout = () => {
                 </NavLink>
               ))}
             </nav>
-
-            <div className="mt-auto pt-8 border-t" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-              <Link
-                to="/admin/dashboard"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold uppercase tracking-wider rounded transition-all"
-                style={{ background: '#D4AF37', color: '#0A2540' }}
-              >
-                Portal Login <ArrowUpRight size={16} />
-              </Link>
-            </div>
           </div>
         </div>
       )}
 
       {/* Main Content */}
       <main className="flex-grow">
-        <Outlet />
+        <PageTransition key={location.pathname}>
+          <Outlet />
+        </PageTransition>
       </main>
 
       {/* ── FOOTER ──────────────────────────────────────────────────────── */}
@@ -227,19 +246,19 @@ const ClientLayout = () => {
               <div className="flex items-center gap-3 mb-6">
                 <div
                   className="h-8 w-8 rounded flex items-center justify-center font-display font-bold text-sm"
-                  style={{ background: '#D4AF37', color: '#0A2540' }}
+                  style={{ background: 'transparent', color: '#0A2540' }}
                 >
-                  Da'
+                  <img src="/Da' Corridor.png" alt="Logo" className="h-full w-full object-contain" />
                 </div>
                 <span className="font-display font-bold text-lg tracking-widest uppercase text-white">
-                  ArchStudio
+                  Da' Corridor
                 </span>
               </div>
               <p className="text-sm leading-relaxed mb-6 font-light">
                 Crafting luxury space plans, sustainable architectures, and minimal interiors that endure.
               </p>
               <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                &copy; {new Date().getFullYear()} ArchStudio. All rights reserved.
+                &copy; {new Date().getFullYear()} Da' Corridor. All rights reserved.
               </p>
             </div>
 

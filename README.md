@@ -1,4 +1,4 @@
-# Architecture Portfolio CMS Admin Panel
+﻿# Architecture Portfolio CMS Admin Panel
 
 A high-end, responsive, and minimalist Content Management System (CMS) designed specifically for an Architecture Portfolio Website. Inspired by premium dashboard layouts like Vercel, Linear, and Notion.
 
@@ -83,7 +83,7 @@ This spins up:
 
 ## Administrator Login Credentials
 Use the default credentials seeded into the database to log in:
-- **Email**: `admin@archstudio.com`
+- **Email**: `admin@dacorridor.com`
 - **Password**: `admin123`
 
 ---
@@ -104,7 +104,7 @@ When a visitor signs up for the newsletter or sends a message through the contac
 
 ## Changelog
 
-### Phase 1 Bug Fixes � Tailwind Invalid Utility Classes (2026-07-14)
+### Phase 1 Bug Fixes — Tailwind Invalid Utility Classes (2026-07-14)
 Replaced all invalid/non-existent Tailwind CSS neutral color shades across 15 frontend source files.
 
 | Invalid Class | Replaced With | Rationale |
@@ -142,7 +142,7 @@ eutral-950 | Closest lower valid shade |
 
 **Files changed:** BlogFAQ.jsx, Dashboard.jsx, HeroAbout.jsx, Inquiries.jsx, MediaLibrary.jsx, Portfolio.jsx (admin), SettingsSEO.jsx, TestimonialsTeamPartners.jsx, AboutUs.jsx, Blog.jsx, ClientLayout.jsx, Comments.jsx, Contact.jsx, Portfolio.jsx (client), Services.jsx (client)
 
-**Build result:** ? ite build � 2406 modules transformed, built in 6.03s, zero errors.
+**Build result:** ? ite build — 2406 modules transformed, built in 6.03s, zero errors.
 ---
 
 ## Reusable Media Picker Component (`MediaPicker`)
@@ -151,9 +151,9 @@ A modern, reusable, drag-and-drop media upload component integrated in the **Por
 
 ### Architecture & Folder Structure
 Located under `frontend/src/components/ui/media/`:
-- `MediaPicker.jsx` — Core orchestrator, manages upload states, validates files, and coordinates API communication.
-- `UploadDropzone.jsx` — UI dropzone, captures drop/drag/click, and renders the progress bar.
-- `ImagePreview.jsx` — Renders single card or multiple thumbnail grid with hovering delete buttons.
+- `MediaPicker.jsx` â€” Core orchestrator, manages upload states, validates files, and coordinates API communication.
+- `UploadDropzone.jsx` â€” UI dropzone, captures drop/drag/click, and renders the progress bar.
+- `ImagePreview.jsx` â€” Renders single card or multiple thumbnail grid with hovering delete buttons.
 
 ### Upload Workflow
 1. **User interaction**: Drag-and-drops or clicks to browse.
@@ -192,3 +192,4 @@ import MediaPicker from '../components/ui/media/MediaPicker';
 - Handles validation and network errors gracefully without disrupting the parent React form state.
 - Supports concurrent sequential uploads for multiple file selections.
 - Future extension points: Add local drag-and-drop sorting support to the preview grid, or plug-in cloud CDN uploads directly.
+

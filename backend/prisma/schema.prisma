@@ -1,6 +1,5 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -8,14 +7,25 @@ generator client {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  password  String
-  name      String
-  role      String    @default("ADMIN") // Only admin login as requested, but structured role-wise
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime? // Soft delete
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  password            String
+  name                String
+  avatar              String?
+  role                String    @default("ADMIN") // SUPER_ADMIN, ADMIN, CO_ADMIN
+  isActive            Boolean   @default(true)
+  mustChangePassword  Boolean   @default(false)
+  lastLoginAt         DateTime?
+  failedLoginAttempts Int       @default(0)
+  lastFailedLoginAt   DateTime?
+  deactivatedAt       DateTime?
+  createdById         String?
+  updatedById         String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime? // Soft delete
+
+  @@index([deletedAt])
 }
 
 model HeroSection {
@@ -68,6 +78,8 @@ model ProcessStep {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime? // Soft delete
+
+  @@index([deletedAt, stepNumber])
 }
 
 model WhyChooseUs {
@@ -81,41 +93,59 @@ model WhyChooseUs {
 }
 
 model Service {
-  id               String    @id @default(uuid())
-  title            String
-  icon             String
-  shortDescription String
-  fullDescription  String
-  image            String?
-  displayOrder     Int       @default(0)
-  isActive         Boolean   @default(true)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  deletedAt        DateTime? // Soft delete
+  id                     String    @id @default(uuid())
+  title                  String
+  icon                   String
+  shortDescription       String
+  fullDescription        String
+  image                  String?
+  displayOrder           Int       @default(0)
+  isActive               Boolean   @default(true)
+  publishingStatus       String    @default("PUBLISHED") // "DRAFT", "PENDING_APPROVAL", "PUBLISHED", "ARCHIVED"
+  scheduledPublishAt     DateTime?
+  scheduledUnpublishAt   DateTime?
+  submittedForApprovalAt DateTime?
+  approvedById           String?
+  createdById            String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  deletedAt              DateTime? // Soft delete
+
+  @@index([deletedAt, publishingStatus, isActive])
+  @@index([displayOrder])
 }
 
 model Project {
-  id              String         @id @default(uuid())
-  title           String
-  slug            String         @unique
-  category        String
-  coverImage      String
-  images          ProjectImage[]
-  clientName      String
-  location        String
-  area            String
-  completionDate  DateTime
-  status          String         // e.g. "Completed", "In Progress", "Concept"
-  description     String
-  designChallenge String
-  solution        String
-  materials       String         // Comma-separated tags or materials
-  featured        Boolean        @default(false)
-  seoTitle        String?
-  seoDescription  String?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  deletedAt       DateTime?      // Soft delete
+  id                     String         @id @default(uuid())
+  title                  String
+  slug                   String         @unique
+  category               String
+  coverImage             String
+  images                 ProjectImage[]
+  clientName             String
+  location               String
+  area                   String
+  completionDate         DateTime
+  status                 String         // e.g. "Completed", "In Progress", "Concept"
+  publishingStatus       String         @default("PUBLISHED") // "DRAFT", "PENDING_APPROVAL", "PUBLISHED", "ARCHIVED"
+  scheduledPublishAt     DateTime?
+  scheduledUnpublishAt   DateTime?
+  submittedForApprovalAt DateTime?
+  approvedById           String?
+  createdById            String?
+  description            String
+  designChallenge        String
+  solution               String
+  materials              String         // Comma-separated tags or materials
+  featured               Boolean        @default(false)
+  seoTitle               String?
+  seoDescription         String?
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  deletedAt              DateTime?      // Soft delete
+
+  @@index([deletedAt, publishingStatus, featured])
+  @@index([category])
 }
 
 model ProjectImage {
@@ -126,6 +156,8 @@ model ProjectImage {
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([projectId, order])
 }
 
 model GalleryItem {
@@ -137,20 +169,29 @@ model GalleryItem {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime? // Soft delete
+
+  @@index([deletedAt, folder])
 }
 
 model Testimonial {
-  id           String    @id @default(uuid())
-  clientName   String
-  company      String
-  designation  String
-  profileImage String?
-  rating       Int       @default(5)
-  review       String
-  isActive     Boolean   @default(true)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  deletedAt    DateTime? // Soft delete
+  id                     String    @id @default(uuid())
+  clientName             String
+  company                String
+  designation            String
+  profileImage           String?
+  rating                 Int       @default(5)
+  review                 String
+  isActive               Boolean   @default(true)
+  publishingStatus       String    @default("PUBLISHED") // "DRAFT", "PENDING_APPROVAL", "PUBLISHED", "ARCHIVED"
+  scheduledPublishAt     DateTime?
+  scheduledUnpublishAt   DateTime?
+  submittedForApprovalAt DateTime?
+  approvedById           String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  deletedAt              DateTime? // Soft delete
+
+  @@index([deletedAt, publishingStatus, isActive])
 }
 
 model TeamMember {
@@ -166,6 +207,8 @@ model TeamMember {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime? // Soft delete
+
+  @@index([deletedAt])
 }
 
 model Partner {
@@ -176,22 +219,33 @@ model Partner {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime? // Soft delete
+
+  @@index([deletedAt])
 }
 
 model BlogPost {
-  id             String    @id @default(uuid())
-  title          String
-  slug           String    @unique
-  category       String
-  tags           String    // Comma-separated
-  featuredImage  String
-  richText       String
-  seoTitle       String?
-  seoDescription String?
-  publishDate    DateTime  @default(now())
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  deletedAt      DateTime? // Soft delete
+  id                     String    @id @default(uuid())
+  title                  String
+  slug                   String    @unique
+  category               String
+  tags                   String    // Comma-separated
+  featuredImage          String
+  richText               String
+  seoTitle               String?
+  seoDescription         String?
+  publishingStatus       String    @default("PUBLISHED") // "DRAFT", "PENDING_APPROVAL", "PUBLISHED", "ARCHIVED"
+  scheduledPublishAt     DateTime?
+  scheduledUnpublishAt   DateTime?
+  submittedForApprovalAt DateTime?
+  approvedById           String?
+  createdById            String?
+  publishDate            DateTime  @default(now())
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  deletedAt              DateTime? // Soft delete
+
+  @@index([deletedAt, publishingStatus])
+  @@index([category])
 }
 
 model FAQ {
@@ -202,6 +256,8 @@ model FAQ {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   deletedAt    DateTime? // Soft delete
+
+  @@index([deletedAt, displayOrder])
 }
 
 model ContactDetails {
@@ -232,6 +288,9 @@ model ContactMessage {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime? // Soft delete
+
+  @@index([deletedAt, status])
+  @@index([createdAt])
 }
 
 model NewsletterSubscriber {
@@ -250,8 +309,6 @@ model SEOSettings {
   ogImage                   String?
   googleAnalyticsId         String?
   searchConsoleVerification String?
-  robotsText                String?
-  sitemapXml                String?
   createdAt                 DateTime  @default(now())
   updatedAt                 DateTime  @updatedAt
   deletedAt                 DateTime? // Soft delete
@@ -272,9 +329,37 @@ model SystemSettings {
 }
 
 model ActivityLog {
-  id        String   @id @default(uuid())
-  action    String   // e.g. "CREATED_PROJECT", "UPDATED_ABOUT"
-  details   String
-  userEmail String
-  createdAt DateTime @default(now())
+  id            String   @id @default(uuid())
+  action        String   // e.g. "CREATED_PROJECT", "UPDATED_ABOUT"
+  details       String
+  previousValue String?  // JSON string of state before mutation
+  newValue      String?  // JSON string of state after mutation
+  userEmail     String
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model Notification {
+  id            String    @id @default(uuid())
+  type          String    // e.g. CONTACT_INQUIRY, BLOG_SUBMITTED, BLOG_APPROVED, BLOG_REJECTED, etc.
+  title         String
+  message       String
+  entityType    String    // e.g. ContactMessage, BlogPost, Project, Service, GalleryItem
+  entityId      String?
+  priority      String    @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  isRead        Boolean   @default(false)
+  senderId      String?   // User who triggered action
+  recipientId   String?   // Targeted user ID (e.g. original author)
+  recipientRole String?   // Targeted role (e.g. SUPER_ADMIN for approval requests)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? // Soft delete
+
+  @@index([deletedAt, isRead])
+  @@index([deletedAt, recipientId, isRead])
+  @@index([deletedAt, recipientRole, isRead])
+  @@index([createdAt])
 }

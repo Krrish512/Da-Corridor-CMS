@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import {
   Menu, X, Sun, Moon, Bell, LogOut, Search, ChevronRight, User, Settings,
   LayoutDashboard, Globe, MessageSquare, Shield, FolderOpen, Mail, HardDrive,
-  BookOpen, Eye, Award, Cpu, Star, Users, Link2, HelpCircle, Briefcase, FileText
+  BookOpen, Eye, Award, Cpu, Star, Users, Link2, HelpCircle, Briefcase, FileText,
+  Key, Activity, AlertCircle
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
+import NotificationCenter from '../common/NotificationCenter';
+
+const UserProfileModal = lazy(() => import('../user/UserProfileModal'));
 
 const DashboardLayout = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission } = useAuth();
   const location = useLocation();
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -18,30 +22,35 @@ const DashboardLayout = () => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // User Profile modal state
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [profileModalTab, setProfileModalTab] = useState('profile');
+
   // Dynamic Admin Page Titles
   useEffect(() => {
     const titleMap = {
-      '/admin/dashboard': 'Dashboard | ArchStudio Admin',
-      '/admin/hero': 'Hero Section CMS | ArchStudio Admin',
-      '/admin/about': 'About Studio CMS | ArchStudio Admin',
-      '/admin/achievements': 'Achievements CMS | ArchStudio Admin',
-      '/admin/process': 'Process Workflow CMS | ArchStudio Admin',
-      '/admin/why-choose-us': 'Why Choose Us CMS | ArchStudio Admin',
-      '/admin/services': 'Services CMS | ArchStudio Admin',
-      '/admin/portfolio': 'Portfolio Projects CMS | ArchStudio Admin',
-      '/admin/gallery': 'Image Gallery CMS | ArchStudio Admin',
-      '/admin/testimonials': 'Testimonials CMS | ArchStudio Admin',
-      '/admin/team': 'Team Members CMS | ArchStudio Admin',
-      '/admin/partners': 'Partners & Clients CMS | ArchStudio Admin',
-      '/admin/faq': 'FAQ CMS | ArchStudio Admin',
-      '/admin/blog': 'Blog Posts CMS | ArchStudio Admin',
-      '/admin/messages': 'Contact Inquiries | ArchStudio Admin',
-      '/admin/newsletter': 'Newsletter List | ArchStudio Admin',
-      '/admin/seo': 'SEO Config | ArchStudio Admin',
-      '/admin/media-library': 'Media Library | ArchStudio Admin',
-      '/admin/settings': 'System Config | ArchStudio Admin',
+      '/admin/dashboard': `Dashboard | Da' Corridor Admin`,
+      '/admin/hero': `Hero Section CMS | Da' Corridor Admin`,
+      '/admin/about': `About Studio CMS | Da' Corridor Admin`,
+      '/admin/achievements': `Achievements CMS | Da' Corridor Admin`,
+      '/admin/process': `Process Workflow CMS | Da' Corridor Admin`,
+      '/admin/why-choose-us': `Why Choose Us CMS | Da' Corridor Admin`,
+      '/admin/services': `Services CMS | Da' Corridor Admin`,
+      '/admin/portfolio': `Portfolio Projects CMS | Da' Corridor Admin`,
+      '/admin/gallery': `Image Gallery CMS | Da' Corridor Admin`,
+      '/admin/testimonials': `Testimonials CMS | Da' Corridor Admin`,
+      '/admin/team': `Team Members CMS | Da' Corridor Admin`,
+      '/admin/partners': `Partners & Clients CMS | Da' Corridor Admin`,
+      '/admin/faq': `FAQ CMS | Da' Corridor Admin`,
+      '/admin/blog': `Blog Posts CMS | Da' Corridor Admin`,
+      '/admin/messages': `Contact Inquiries | Da' Corridor Admin`,
+      '/admin/newsletter': `Newsletter List | Da' Corridor Admin`,
+      '/admin/seo': `SEO Config | Da' Corridor Admin`,
+      '/admin/media-library': `Media Library | Da' Corridor Admin`,
+      '/admin/settings': `System Config | Da' Corridor Admin`,
+      '/admin/users': `User Management | Da' Corridor Admin`,
     };
-    document.title = titleMap[location.pathname] || 'ArchStudio Admin Panel';
+    document.title = titleMap[location.pathname] || `Da' Corridor Admin Panel`;
   }, [location.pathname]);
 
   // Sync dark mode class
@@ -76,48 +85,67 @@ const DashboardLayout = () => {
     setNotificationsOpen(false);
   }, [location.pathname]);
 
-  // Sidebar Menu Configuration
-  const menuGroups = [
+  // Sidebar Menu Configuration (Filtered by permissions)
+  const menuGroupsRaw = [
     {
       title: 'General',
       items: [
-        { label: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+        { label: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard, permission: 'DASHBOARD_VIEW' },
       ]
     },
     {
       title: 'Website Content',
       items: [
-        { label: 'Hero Section', path: '/admin/hero', icon: Globe },
-        { label: 'About Studio', path: '/admin/about', icon: FileText },
-        { label: 'Achievements', path: '/admin/achievements', icon: Award },
-        { label: 'Process Workflow', path: '/admin/process', icon: Cpu },
-        { label: 'Why Choose Us', path: '/admin/why-choose-us', icon: Shield },
-        { label: 'Services', path: '/admin/services', icon: Briefcase },
-        { label: 'Portfolio Projects', path: '/admin/portfolio', icon: HardDrive },
-        { label: 'Image Gallery', path: '/admin/gallery', icon: FolderOpen },
-        { label: 'Testimonials', path: '/admin/testimonials', icon: Star },
-        { label: 'Team Members', path: '/admin/team', icon: Users },
-        { label: 'Partners & Clients', path: '/admin/partners', icon: Link2 },
-        { label: 'FAQ', path: '/admin/faq', icon: HelpCircle },
-        { label: 'Blog Posts', path: '/admin/blog', icon: BookOpen },
+        { label: 'Hero Section', path: '/admin/hero', icon: Globe, permission: 'HERO_MANAGE' },
+        { label: 'About Studio', path: '/admin/about', icon: FileText, permission: 'ABOUT_MANAGE' },
+        { label: 'Achievements', path: '/admin/achievements', icon: Award, permission: 'ABOUT_MANAGE' },
+        { label: 'Process Workflow', path: '/admin/process', icon: Cpu, permission: 'ABOUT_MANAGE' },
+        { label: 'Why Choose Us', path: '/admin/why-choose-us', icon: Shield, permission: 'ABOUT_MANAGE' },
+        { label: 'Services', path: '/admin/services', icon: Briefcase, permission: 'SERVICES_MANAGE' },
+        { label: 'Portfolio Projects', path: '/admin/portfolio', icon: HardDrive, permission: 'PORTFOLIO_READ' },
+        { label: 'Image Gallery', path: '/admin/gallery', icon: FolderOpen, permission: 'GALLERY_MANAGE' },
+        { label: 'Testimonials', path: '/admin/testimonials', icon: Star, permission: 'ABOUT_MANAGE' },
+        { label: 'Team Members', path: '/admin/team', icon: Users, permission: 'ABOUT_MANAGE' },
+        { label: 'Partners & Clients', path: '/admin/partners', icon: Link2, permission: 'ABOUT_MANAGE' },
+        { label: 'FAQ', path: '/admin/faq', icon: HelpCircle, permission: 'BLOG_MANAGE' },
+        { label: 'Blog Posts', path: '/admin/blog', icon: BookOpen, permission: 'BLOG_MANAGE' },
       ]
     },
     {
       title: 'Communications',
       items: [
-        { label: 'Contact Inquiries', path: '/admin/messages', icon: MessageSquare },
-        { label: 'Newsletter List', path: '/admin/newsletter', icon: Mail },
+        { label: 'Contact Inquiries', path: '/admin/messages', icon: MessageSquare, permission: 'CONTACT_MANAGE' },
+        { label: 'Newsletter List', path: '/admin/newsletter', icon: Mail, permission: 'NEWSLETTER_MANAGE' },
       ]
     },
     {
-      title: 'Settings',
+      title: 'Settings & Media',
       items: [
-        { label: 'SEO Config', path: '/admin/seo', icon: Eye },
-        { label: 'Media Library', path: '/admin/media-library', icon: FolderOpen },
-        { label: 'System Configuration', path: '/admin/settings', icon: Settings },
+        { label: 'SEO Config', path: '/admin/seo', icon: Eye, permission: 'SEO_MANAGE' },
+        { label: 'Media Library', path: '/admin/media-library', icon: FolderOpen, permission: 'GALLERY_MANAGE' },
+        { label: 'System Configuration', path: '/admin/settings', icon: Settings, permission: 'SETTINGS_MANAGE' },
+      ]
+    },
+    {
+      title: 'System Management',
+      items: [
+        { label: 'Users & Roles', path: '/admin/users', icon: Shield, permission: 'USERS_MANAGE' },
+        { label: 'System Backups', path: '/admin/backups', icon: HardDrive, permission: 'SYSTEM_LOGS_VIEW' },
       ]
     }
   ];
+
+  // Filter menu groups by user permissions
+  const menuGroups = menuGroupsRaw.map(group => ({
+    ...group,
+    items: group.items.filter(item => !item.permission || hasPermission(item.permission))
+  })).filter(group => group.items.length > 0);
+
+  const openProfileTab = (tab = 'profile') => {
+    setProfileModalTab(tab);
+    setProfileModalOpen(true);
+    setProfileDropdownOpen(false);
+  };
 
   // Helper: Flatten menu items to find active labels for breadcrumbs
   const getBreadcrumbs = () => {
@@ -151,7 +179,7 @@ const DashboardLayout = () => {
 
   const activeBreadcrumbs = getBreadcrumbs();
 
-  // Sidebar inner JSX (shared between desktop & mobile)
+  // Sidebar inner JSX
   const SidebarContent = () => (
     <>
       {/* Sidebar Header */}
@@ -159,12 +187,11 @@ const DashboardLayout = () => {
         <Link to="/admin/dashboard" className="flex items-center gap-3">
           <span
             className="h-7 w-7 rounded flex items-center justify-center font-display font-bold text-xs tracking-wider shrink-0"
-            style={{ background: '#D4AF37', color: '#0A2540' }}
-          >
-            Da'
+            style={{ background: 'transparent', color: '#0A2540' }}>
+            <img src="/Da' Corridor.png" alt="Logo" className="h-full w-full object-contain" />
           </span>
           <span className="font-display font-bold text-sm tracking-widest uppercase text-white">
-            ArchStudio
+            Da' Corridor
           </span>
           <span
             className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
@@ -196,18 +223,6 @@ const DashboardLayout = () => {
                         background: isActive ? 'rgba(212,175,55,0.12)' : 'transparent',
                         borderLeft: isActive ? '2px solid #D4AF37' : '2px solid transparent',
                       }}
-                      onMouseEnter={e => {
-                        if (!isActive) {
-                          e.currentTarget.style.background = 'rgba(212,175,55,0.06)';
-                          e.currentTarget.style.color = 'white';
-                        }
-                      }}
-                      onMouseLeave={e => {
-                        if (!isActive) {
-                          e.currentTarget.style.background = 'transparent';
-                          e.currentTarget.style.color = 'rgba(255,255,255,0.75)';
-                        }
-                      }}
                     >
                       <Icon className="w-3.5 h-3.5 shrink-0" />
                       {item.label}
@@ -227,11 +242,17 @@ const DashboardLayout = () => {
             className="h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs uppercase shrink-0"
             style={{ background: '#D4AF37', color: '#0A2540' }}
           >
-            {user?.name?.slice(0, 2) || 'AD'}
+            {user?.avatar ? (
+              <img src={user.avatar} alt={user.name} className="h-8 w-8 rounded-full object-cover" />
+            ) : (
+              user?.name?.slice(0, 2) || 'AD'
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold truncate text-white">{user?.name}</p>
-            <p className="text-[10px] truncate" style={{ color: 'rgba(255,255,255,0.45)' }}>{user?.email}</p>
+            <span className="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase tracking-wider inline-block mt-0.5" style={{ background: 'rgba(212,175,55,0.2)', color: '#D4AF37' }}>
+              {user?.role === 'SUPER_ADMIN' ? 'Super Admin' : user?.role === 'CO_ADMIN' ? 'Co-Admin' : 'Admin'}
+            </span>
           </div>
           <button
             onClick={logout}
@@ -249,6 +270,13 @@ const DashboardLayout = () => {
 
   return (
     <div className="min-h-screen flex" style={{ background: 'var(--arch-bg, #F7F7F5)' }}>
+
+      {/* Profile Modal */}
+      <UserProfileModal
+        isOpen={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+        initialTab={profileModalTab}
+      />
 
       {/* MOBILE SIDEBAR OVERLAY */}
       {mobileSidebarOpen && (
@@ -285,6 +313,23 @@ const DashboardLayout = () => {
 
       {/* VIEWPORT CANVAS */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        
+        {/* TEMPORARY PASSWORD WARNING BANNER */}
+        {user?.mustChangePassword && (
+          <div className="bg-amber-500 text-slate-950 px-4 py-2 text-xs font-bold flex items-center justify-between shrink-0 shadow-sm">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>Security Notice: You are logged in with a temporary password. Please update your password immediately.</span>
+            </div>
+            <button
+              onClick={() => openProfileTab('security')}
+              className="bg-slate-950 text-white px-3 py-1 rounded text-[11px] font-bold hover:bg-slate-800 transition-colors"
+            >
+              Update Password
+            </button>
+          </div>
+        )}
+
         {/* TOP NAVBAR */}
         <header className="h-16 bg-white dark:bg-neutral-900 flex items-center justify-between px-4 md:px-6 shrink-0 z-10" style={{ borderBottom: '1px solid rgba(10,37,64,0.08)' }}>
           <div className="flex items-center gap-4">
@@ -324,10 +369,11 @@ const DashboardLayout = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded-md py-1.5 pl-9 pr-4 text-xs focus:outline-none transition-all"
                 style={{ borderColor: 'rgba(10,37,64,0.12)' }}
-                onFocus={e => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.15)'; }}
-                onBlur={e => { e.target.style.borderColor = 'rgba(10,37,64,0.12)'; e.target.style.boxShadow = 'none'; }}
               />
             </div>
+
+            {/* NOTIFICATION CENTER */}
+            <NotificationCenter />
 
             {/* THEME TOGGLE */}
             <button
@@ -338,39 +384,6 @@ const DashboardLayout = () => {
               {darkMode ? <Sun className="w-4 h-4" style={{ color: '#D4AF37' }} /> : <Moon className="w-4 h-4" />}
             </button>
 
-            {/* NOTIFICATIONS */}
-            <div className="relative">
-              <button
-                onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="p-2 rounded-md border hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors relative"
-                style={{ borderColor: 'rgba(10,37,64,0.12)', color: '#6B7280' }}
-              >
-                <Bell className="w-4 h-4" />
-                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{ background: '#D4AF37' }} />
-              </button>
-
-              {notificationsOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-neutral-900 rounded-lg shadow-arch-lg z-20 py-2 animate-scale-in" style={{ border: '1px solid rgba(10,37,64,0.1)' }}>
-                  <div className="px-4 py-2 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(10,37,64,0.08)' }}>
-                    <span className="text-xs font-bold" style={{ color: '#0A2540' }}>Notifications</span>
-                    <span className="text-[10px] text-neutral-400 cursor-pointer hover:text-neutral-600">Mark all read</span>
-                  </div>
-                  <div className="max-h-[300px] overflow-y-auto text-xs divide-y divide-neutral-100 dark:divide-neutral-800">
-                    <div className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors">
-                      <p className="font-semibold text-neutral-800 dark:text-neutral-200">New message from Arthur Pendelton</p>
-                      <p className="text-neutral-400 mt-0.5">Subject: Custom Cabin Feasibility</p>
-                      <span className="text-[10px] text-neutral-300 dark:text-neutral-600 block mt-1">10 mins ago</span>
-                    </div>
-                    <div className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors">
-                      <p className="font-semibold text-neutral-800 dark:text-neutral-200">New Subscriber</p>
-                      <p className="text-neutral-400 mt-0.5">arch.enthusiast@hotmail.com joined newsletter</p>
-                      <span className="text-[10px] text-neutral-300 dark:text-neutral-600 block mt-1">1 hour ago</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
             {/* PROFILE DROPDOWN */}
             <div className="relative">
               <button
@@ -379,27 +392,51 @@ const DashboardLayout = () => {
                 style={{ borderColor: 'rgba(10,37,64,0.12)' }}
               >
                 <div
-                  className="h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold"
+                  className="h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
                   style={{ background: '#0A2540', color: '#D4AF37' }}
                 >
-                  {user?.name?.slice(0, 1) || 'A'}
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt={user.name} className="h-6 w-6 rounded-full object-cover" />
+                  ) : (
+                    user?.name?.slice(0, 1) || 'A'
+                  )}
                 </div>
                 <span className="text-xs font-semibold hidden md:inline pr-1 text-neutral-700 dark:text-neutral-300">{user?.name || 'Admin'}</span>
               </button>
 
               {profileDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-900 rounded-lg shadow-arch-lg z-20 py-1 animate-scale-in" style={{ border: '1px solid rgba(10,37,64,0.1)' }}>
-                  <div className="px-4 py-2" style={{ borderBottom: '1px solid rgba(10,37,64,0.08)' }}>
+                <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-neutral-900 rounded-lg shadow-arch-lg z-20 py-1 animate-scale-in border border-neutral-200 dark:border-neutral-800">
+                  <div className="px-4 py-2 border-b border-neutral-100 dark:border-neutral-800">
                     <p className="text-xs font-bold text-neutral-800 dark:text-neutral-100">{user?.name}</p>
                     <p className="text-[10px] text-neutral-400 truncate">{user?.email}</p>
+                    <span className="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase inline-block mt-1" style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37' }}>
+                      {user?.role === 'SUPER_ADMIN' ? 'Super Admin' : user?.role === 'CO_ADMIN' ? 'Co-Admin' : 'Admin'}
+                    </span>
                   </div>
-                  <Link to="/admin/settings" className="flex items-center gap-2 px-4 py-2 text-xs text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
-                    <User className="w-3.5 h-3.5" /> Profile Settings
-                  </Link>
-                  <Link to="/admin/settings" className="flex items-center gap-2 px-4 py-2 text-xs text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
-                    <Settings className="w-3.5 h-3.5" /> System Settings
-                  </Link>
+
+                  <button
+                    onClick={() => openProfileTab('profile')}
+                    className="flex w-full items-center gap-2.5 px-4 py-2 text-xs text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors text-left"
+                  >
+                    <User className="w-3.5 h-3.5 text-neutral-400" /> My Profile
+                  </button>
+
+                  <button
+                    onClick={() => openProfileTab('security')}
+                    className="flex w-full items-center gap-2.5 px-4 py-2 text-xs text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors text-left"
+                  >
+                    <Key className="w-3.5 h-3.5 text-neutral-400" /> Change Password
+                  </button>
+
+                  <button
+                    onClick={() => openProfileTab('activity')}
+                    className="flex w-full items-center gap-2.5 px-4 py-2 text-xs text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors text-left"
+                  >
+                    <Activity className="w-3.5 h-3.5 text-neutral-400" /> My Activity
+                  </button>
+
                   <hr className="border-neutral-100 dark:border-neutral-800 my-1" />
+
                   <button
                     onClick={logout}
                     className="flex w-full items-center gap-2 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors text-left font-medium"
@@ -417,6 +454,16 @@ const DashboardLayout = () => {
           <Outlet />
         </main>
       </div>
+
+      <Suspense fallback={null}>
+        {profileModalOpen && (
+          <UserProfileModal
+            isOpen={profileModalOpen}
+            onClose={() => setProfileModalOpen(false)}
+            defaultTab={profileModalTab}
+          />
+        )}
+      </Suspense>
     </div>
   );
 };

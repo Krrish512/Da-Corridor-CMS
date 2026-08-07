@@ -1,16 +1,21 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell
-} from 'recharts';
 import {
   FileText, Briefcase, Star, MessageSquare, Mail, Layers, ArrowRight,
   TrendingUp, Clock, UserCheck
 } from 'lucide-react';
 
 import api from '../utils/api';
+
+const DashboardCharts = lazy(() => import('../components/dashboard/DashboardCharts'));
+
+const ChartSkeleton = () => (
+  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="lg:col-span-2 h-[320px] bg-white dark:bg-neutral-900 rounded-lg p-4 animate-pulse" style={{ border: '1px solid rgba(10,37,64,0.08)' }} />
+    <div className="h-[320px] bg-white dark:bg-neutral-900 rounded-lg p-4 animate-pulse" style={{ border: '1px solid rgba(10,37,64,0.08)' }} />
+  </div>
+);
 
 const Dashboard = () => {
   const { data, isLoading, isError } = useQuery({
@@ -123,7 +128,7 @@ const Dashboard = () => {
               </div>
               <div className="mt-4">
                 <span
-                  className={`text-2xl font-display font-bold ${
+                  className={`text-2xl font-sans font-bold ${
                     isUrgent 
                       ? 'text-[#D4AF37]' 
                       : card.highlight 
@@ -140,79 +145,9 @@ const Dashboard = () => {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Monthly Inquiries Bar Chart */}
-        <div className="lg:col-span-2 rounded-lg p-4 md:p-6 dark:bg-neutral-900 dark:border-neutral-800" style={cardStyle}>
-          <div className="flex items-center gap-2 mb-6">
-            <TrendingUp className="w-4 h-4" style={{ color: '#D4AF37' }} />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-[#0A2540] dark:text-neutral-100">Monthly Client Inquiries</h2>
-          </div>
-          <div className="h-[260px] w-full">
-            {monthlyInquiries && monthlyInquiries.some(m => m.inquiries > 0) ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyInquiries} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(10,37,64,0.05)" />
-                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                  <Tooltip
-                    contentStyle={{
-                      background: 'var(--arch-surface, #fff)',
-                      border: '1px solid var(--arch-border, rgba(10,37,64,0.1))',
-                      borderRadius: '6px',
-                      fontSize: '11px',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                    }}
-                    cursor={{ fill: 'rgba(10,37,64,0.03)' }}
-                  />
-                  <Bar dataKey="inquiries" fill="#0A2540" radius={[4, 4, 0, 0]} barSize={24} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex h-full items-center justify-center text-xs text-neutral-400">
-                No inquiries submitted in the current year.
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Projects by Category Donut */}
-        <div className="rounded-lg p-4 md:p-6 dark:bg-neutral-900 dark:border-neutral-800" style={cardStyle}>
-          <div className="flex items-center gap-2 mb-6">
-            <Layers className="w-4 h-4" style={{ color: '#D4AF37' }} />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-[#0A2540] dark:text-neutral-100">Projects by Category</h2>
-          </div>
-          <div className="h-[260px] w-full flex flex-col justify-between">
-            {projectsByCategory && projectsByCategory.length > 0 ? (
-              <>
-                <div className="h-44 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={projectsByCategory} innerRadius={50} outerRadius={70} paddingAngle={4} dataKey="value">
-                        {projectsByCategory.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => [`${value} projects`, 'Count']} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-[10px] font-semibold text-neutral-500 mt-2">
-                  {projectsByCategory.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-1.5 truncate">
-                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
-                      <span className="truncate">{item.name} ({item.value})</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="flex h-full items-center justify-center text-xs text-neutral-400">
-                No project records registered.
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <Suspense fallback={<ChartSkeleton />}>
+        <DashboardCharts monthlyInquiries={monthlyInquiries} projectsByCategory={projectsByCategory} />
+      </Suspense>
 
       {/* Timelines & Messages */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

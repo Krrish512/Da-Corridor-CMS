@@ -1,4 +1,5 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   BookOpen, HelpCircle, Plus, Edit2, Trash2, X, Save, ArrowLeft, Eye, Edit,
@@ -8,16 +9,37 @@ import {
 import { useToast } from '../context/ToastContext';
 import api from '../utils/api';
 
+import { StatusBadge } from '../components/cms/StatusBadge';
+import { useAuth } from '../context/AuthContext';
+import MediaPicker from '../components/ui/media/MediaPicker';
+
+// Derive which tab to show from the current URL path
+const getTabFromPath = (pathname) => {
+  const segment = pathname.split('/').pop();
+  return segment === 'faq' ? 'faq' : 'blog';
+};
+
 const BlogFAQ = () => {
   const queryClient = useQueryClient();
   const { addToast } = useToast();
+  const { user: currentUser } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Tab state: 'blog' | 'faq'
-  const [activeTab, setActiveTab] = useState('blog');
+  const [activeTab, setActiveTab] = useState(() => getTabFromPath(location.pathname));
+
+  // Sync tab when navigating between these routes
+  useEffect(() => {
+    setActiveTab(getTabFromPath(location.pathname));
+  }, [location.pathname]);
 
   // Sub-view for Blog: 'list' | 'create' | 'edit'
   const [blogView, setBlogView] = useState('list');
   const [editingBlogId, setEditingBlogId] = useState(null);
+
+  // Status Filter for Blogs
+  const [blogStatusFilter, setBlogStatusFilter] = useState('');
 
   // Pagination for Blogs
   const [blogPage, setBlogPage] = useState(1);
@@ -34,6 +56,9 @@ const BlogFAQ = () => {
     seoTitle: '',
     seoDescription: '',
     publishDate: '',
+    publishingStatus: currentUser?.role === 'CO_ADMIN' ? 'PENDING_APPROVAL' : 'PUBLISHED',
+    scheduledPublishAt: '',
+    scheduledUnpublishAt: '',
   };
   const [blogForm, setBlogForm] = useState(initialBlogState);
   // Preview or Edit tab inside Rich Text Editor
@@ -48,9 +73,9 @@ const BlogFAQ = () => {
   // QUERIES
   // ----------------------------------------------------
   const { data: blogsData, isLoading: blogsLoading } = useQuery({
-    queryKey: ['blogs', blogPage],
+    queryKey: ['blogs', blogPage, blogStatusFilter],
     queryFn: () =>
-      api.get('/blog', { params: { page: blogPage, limit: blogLimit } }).then((res) => res.data),
+      api.get('/blog', { params: { page: blogPage, limit: blogLimit, publishingStatus: blogStatusFilter } }).then((res) => res.data),
     enabled: activeTab === 'blog',
   });
 
@@ -87,6 +112,18 @@ const BlogFAQ = () => {
       addToast('Blog post deleted.', 'success');
     },
     onError: () => addToast('Failed to delete blog.', 'error'),
+  });
+
+  // Dedicated approval mutation — always uses PUT /blog/:id to update the
+  // existing record. Never calls the create endpoint, preventing duplication.
+  const approveBlogMutation = useMutation({
+    mutationFn: (post) => api.put(`/blog/${post.id}`, { ...post, publishingStatus: 'PUBLISHED' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['blogs']);
+      queryClient.invalidateQueries(['publicBlogs']);
+      addToast('Blog post approved and published!', 'success');
+    },
+    onError: () => addToast('Failed to approve blog post.', 'error'),
   });
 
   // FAQ Mutations
@@ -134,6 +171,9 @@ const BlogFAQ = () => {
       seoTitle: post.seoTitle || '',
       seoDescription: post.seoDescription || '',
       publishDate: dateStr,
+      publishingStatus: post.publishingStatus || 'PUBLISHED',
+      scheduledPublishAt: post.scheduledPublishAt ? new Date(post.scheduledPublishAt).toISOString().slice(0, 16) : '',
+      scheduledUnpublishAt: post.scheduledUnpublishAt ? new Date(post.scheduledUnpublishAt).toISOString().slice(0, 16) : '',
     });
     setBlogView('edit');
   };
@@ -206,7 +246,7 @@ const BlogFAQ = () => {
       {blogView === 'list' && (
         <div className="flex border-b border-neutral-200 dark:border-neutral-850 gap-6 text-xs font-bold uppercase tracking-wider pb-px">
           <button
-            onClick={() => setActiveTab('blog')}
+            onClick={() => navigate('/admin/blog')}
             className={`flex items-center gap-2 pb-3 border-b-2 -mb-px transition-all ${
               activeTab === 'blog'
                 ? 'border-neutral-900 text-neutral-900 dark:border-neutral-100 dark:text-neutral-100'
@@ -217,7 +257,7 @@ const BlogFAQ = () => {
           </button>
 
           <button
-            onClick={() => setActiveTab('faq')}
+            onClick={() => navigate('/admin/faq')}
             className={`flex items-center gap-2 pb-3 border-b-2 -mb-px transition-all ${
               activeTab === 'faq'
                 ? 'border-neutral-900 text-neutral-900 dark:border-neutral-100 dark:text-neutral-100'
@@ -232,8 +272,35 @@ const BlogFAQ = () => {
       {/* ----------------------------------------------------
           BLOG VIEWS
          ---------------------------------------------------- */}
+      {/* BLOG LISTING */}
       {activeTab === 'blog' && blogView === 'list' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
+          {/* Status Filters Bar */}
+          <div className="flex items-center justify-between bg-neutral-100 dark:bg-neutral-850 p-2 rounded-lg text-xs">
+            <div className="flex items-center gap-1 overflow-x-auto py-1">
+              {[
+                { label: 'All Articles', value: '' },
+                { label: 'Published', value: 'PUBLISHED' },
+                { label: 'Pending Approval', value: 'PENDING_APPROVAL' },
+                { label: 'Drafts', value: 'DRAFT' },
+                { label: 'Archived', value: 'ARCHIVED' },
+                { label: 'Scheduled', value: 'SCHEDULED' },
+              ].map((filter) => (
+                <button
+                  key={filter.value}
+                  onClick={() => { setBlogStatusFilter(filter.value); setBlogPage(1); }}
+                  className={`px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${
+                    blogStatusFilter === filter.value
+                      ? 'bg-white dark:bg-neutral-900 text-neutral-950 dark:text-white shadow-sm'
+                      : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {blogsData?.data?.length > 0 ? (
             <div className="space-y-4 max-w-4xl">
               <div className="grid grid-cols-1 gap-4">
@@ -243,8 +310,9 @@ const BlogFAQ = () => {
                     
                     <div className="flex-1 min-w-0 flex flex-col justify-between">
                       <div>
-                        <div className="flex items-center gap-2 mb-1.5">
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                           <span className="bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded text-[9px] font-bold text-neutral-500 uppercase tracking-wider">{post.category}</span>
+                          <StatusBadge status={post.publishingStatus} scheduledPublishAt={post.scheduledPublishAt} />
                           <span className="text-[10px] text-neutral-400">{new Date(post.publishDate).toLocaleDateString()}</span>
                         </div>
                         <h4 className="text-sm font-bold text-neutral-950 dark:text-white">{post.title}</h4>
@@ -253,6 +321,20 @@ const BlogFAQ = () => {
 
                       <div className="flex items-center gap-3 mt-4 text-[11px] font-bold text-neutral-500">
                         <button onClick={() => handleOpenEditBlog(post)} className="hover:text-neutral-900 dark:hover:text-white flex items-center gap-0.5"><Edit2 className="w-3 h-3" /> Edit</button>
+                        {currentUser?.role !== 'CO_ADMIN' && post.publishingStatus === 'PENDING_APPROVAL' && (
+                          <>
+                            <span>|</span>
+                            <button
+                              onClick={() => {
+                                approveBlogMutation.mutate(post);
+                              }}
+                              disabled={approveBlogMutation.isPending}
+                              className="text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 disabled:opacity-50"
+                            >
+                              Approve & Publish
+                            </button>
+                          </>
+                        )}
                         <span>|</span>
                         <button
                           onClick={() => {
@@ -351,14 +433,13 @@ const BlogFAQ = () => {
                     />
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Featured Image URL</label>
-                    <input
-                      type="text"
-                      placeholder="https://example.com/image.jpg"
+                  <div className="space-y-1 col-span-2">
+                    <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Featured Article Image</label>
+                    <MediaPicker
                       value={blogForm.featuredImage}
-                      onChange={(e) => setBlogForm({ ...blogForm, featuredImage: e.target.value })}
-                      className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded-lg py-2 px-3 text-xs focus:outline-none"
+                      onChange={(url) => setBlogForm({ ...blogForm, featuredImage: url })}
+                      multiple={false}
+                      outputFormat="url"
                     />
                   </div>
                 </div>
@@ -406,6 +487,51 @@ const BlogFAQ = () => {
 
             {/* Sidebar Column */}
             <div className="space-y-6">
+              {/* Publishing & Approval Card */}
+              <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-6 shadow-premium space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 pb-2 border-b">Publishing & Approval</h3>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-neutral-400 uppercase">Publishing Status</label>
+                  <select
+                    value={blogForm.publishingStatus}
+                    onChange={(e) => setBlogForm({ ...blogForm, publishingStatus: e.target.value })}
+                    className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded py-1.5 px-2.5 text-xs font-bold text-neutral-900 dark:text-white"
+                  >
+                    {currentUser?.role === 'CO_ADMIN' ? (
+                      <>
+                        <option value="PENDING_APPROVAL">Submit for Approval</option>
+                        <option value="DRAFT">Save as Draft</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="PUBLISHED">Published</option>
+                        <option value="PENDING_APPROVAL">Pending Approval</option>
+                        <option value="DRAFT">Draft</option>
+                        <option value="ARCHIVED">Archived</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                {currentUser?.role === 'CO_ADMIN' && (
+                  <p className="text-[10px] text-amber-600 dark:text-amber-400 italic">
+                    Co-Admin rule: Saving will submit your article to Admin for review & approval.
+                  </p>
+                )}
+
+                <div className="space-y-1 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                  <label className="text-[9px] font-bold text-neutral-400 uppercase">Schedule Auto-Publish (Optional)</label>
+                  <input
+                    type="datetime-local"
+                    value={blogForm.scheduledPublishAt}
+                    onChange={(e) => setBlogForm({ ...blogForm, scheduledPublishAt: e.target.value })}
+                    className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded py-1.5 px-2 text-xs"
+                  />
+                  <span className="text-[10px] text-neutral-400 block">Set future date/time to automatically publish this article.</span>
+                </div>
+              </div>
+
               {/* Settings Card */}
               <div className="bg-white dark:bg-neutral-900 border rounded-lg p-6 shadow-premium space-y-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 pb-2 border-b">Settings</h3>

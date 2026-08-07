@@ -1,7 +1,5 @@
-﻿const { PrismaClient } = require('@prisma/client');
+const prisma = require('../src/utils/db');
 const bcrypt = require('bcryptjs');
-
-const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding database with default mock data...');
@@ -27,21 +25,10 @@ async function main() {
   await prisma.sEOSettings.deleteMany({});
   await prisma.systemSettings.deleteMany({});
   await prisma.galleryItem.deleteMany({});
-  await prisma.user.deleteMany({});
+  // NOTE: User accounts are not deleted or hardcoded in seed.
+  // Administrator accounts are managed exclusively via: node scripts/createAdmin.js
 
-  // 1. Create Admin User
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash('admin123', salt);
-  
-  const adminUser = await prisma.user.create({
-    data: {
-      name: 'Studio Admin',
-      email: 'admin@archstudio.com',
-      password: hashedPassword,
-      role: 'ADMIN',
-    },
-  });
-  console.log(`Created default user: ${adminUser.email}`);
+  console.log('Skipping user seeding -- admin accounts are configured securely via node scripts/createAdmin.js.');
 
   // 2. Hero Section
   await prisma.heroSection.create({
@@ -57,10 +44,10 @@ async function main() {
   // 3. About Section
   await prisma.aboutSection.create({
     data: {
-      name: 'ArchStudio Practice',
+      name: 'Da\' Corridor Practice',
       profession: 'High-End Minimalist Architecture',
       about: 'A multi-disciplinary architecture and spatial planning firm based in New York. We craft timeless spaces globally.',
-      biography: 'Founded in 2012 by principal architect Elena Vance, ArchStudio has grown into a highly recognized brand. We believe in removing the unnecessary to celebrate the essential, creating residences and corporate structures that feel deeply connected to their environment.',
+      biography: 'Founded in 2012 by principal architect Elena Vance, Da\' Corridor has grown into a highly recognized brand. We believe in removing the unnecessary to celebrate the essential, creating residences and corporate structures that feel deeply connected to their environment.',
       experience: 14,
       skills: 'Sustainable Systems, Spatial Optimization, Custom Prefab Structures, Urban Masterplanning',
       vision: 'Harmonizing structural geometries with natural elements to enrich the human experience.',
@@ -183,7 +170,7 @@ async function main() {
   await prisma.contactDetails.create({
     data: {
       officeAddress: '128 Design District, Suite 500, New York, NY 10013',
-      email: 'info@archstudio.com',
+      email: 'info@dacorridor.com',
       phone: '+1 (212) 555-0199',
       whatsApp: '+1 (212) 555-0180',
       googleMapsUrl: 'https://maps.google.com',
@@ -213,14 +200,12 @@ async function main() {
   // 18. SEO Settings
   await prisma.sEOSettings.create({
     data: {
-      homepageTitle: 'ArchStudio | Premium Minimalist Architecture & Planning',
-      metaDescription: 'ArchStudio designs sustainable, aesthetic, and structural masterpieces for residential and commercial projects globally.',
+      homepageTitle: 'Da\'Corridor | Premium Minimalist Architecture & Planning',
+      metaDescription: 'Da\'Corridor designs sustainable, aesthetic, and structural masterpieces for residential and commercial projects globally.',
       keywords: 'minimalist architecture, concrete design, luxury homes, urban planning, BIM modeler',
       ogImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200',
       googleAnalyticsId: 'G-12345678-9',
       searchConsoleVerification: 'google-verification-token-123',
-      robotsText: 'User-agent: *\nAllow: /\nSitemap: https://archstudio.com/sitemap.xml',
-      sitemapXml: '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://archstudio.com/</loc></url>\n  <url><loc>https://archstudio.com/portfolio</loc></url>\n</urlset>',
     },
   });
 
@@ -230,7 +215,7 @@ async function main() {
       websiteLogo: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=100',
       favicon: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=32',
       themeColors: 'default',
-      footerText: '© 2026 ArchStudio. Built with architectural detail.',
+      footerText: '© 2026 Da\'Corridor. Built with architectural detail.',
       maintenanceMode: false,
       timezone: 'America/New_York',
       language: 'en',
@@ -240,8 +225,8 @@ async function main() {
   // 20. Activity Logs
   await prisma.activityLog.createMany({
     data: [
-      { action: 'SYSTEM_INSTALL', details: 'Database schema generated and default administrator registered.', userEmail: 'system@archstudio.com' },
-      { action: 'SEED_DATA', details: 'Populated mock portfolio projects, services, blog posts, and FAQs.', userEmail: 'system@archstudio.com' },
+      { action: 'SYSTEM_INSTALL', details: 'Database schema generated and default administrator registered.', userEmail: 'system@dacorridor.com' },
+      { action: 'SEED_DATA', details: 'Populated mock portfolio projects, services, blog posts, and FAQs.', userEmail: 'system@dacorridor.com' },
     ],
   });
 

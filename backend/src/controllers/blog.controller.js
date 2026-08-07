@@ -1,26 +1,37 @@
-﻿const prisma = require('../utils/db');
+const prisma = require('../utils/db');
+const { logActivity } = require('../utils/activityLogger');
 
-// Get all blogs with pagination, search and category filter
+// Get all blogs with pagination, search, category, and lifecycle status filter
 const getBlogs = async (req, res) => {
   try {
     const {
       search = '',
       category = '',
+      publishingStatus = '',
       page = 1,
       limit = 10,
       isPublic
     } = req.query;
 
-    const parsedPage = parseInt(page, 10);
-    const parsedLimit = parseInt(limit, 10);
+    const parsedPage = Math.max(1, parseInt(page, 10) || 1);
+    const parsedLimit = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
     const skip = (parsedPage - 1) * parsedLimit;
 
     const where = { deletedAt: null };
 
     if (isPublic === 'true' || isPublic === true) {
-      where.publishDate = {
-        lte: new Date()
-      };
+      where.publishingStatus = 'PUBLISHED';
+      where.publishDate = { lte: new Date() };
+      where.AND = [
+        { OR: [{ scheduledPublishAt: null }, { scheduledPublishAt: { lte: new Date() } }] },
+        { OR: [{ scheduledUnpublishAt: null }, { scheduledUnpublishAt: { gt: new Date() } }] },
+      ];
+    } else if (publishingStatus) {
+      if (publishingStatus === 'SCHEDULED') {
+        where.scheduledPublishAt = { gt: new Date() };
+      } else {
+        where.publishingStatus = publishingStatus;
+      }
     }
 
     if (search) {
@@ -70,9 +81,12 @@ const getBlogById = async (req, res) => {
     };
 
     if (isPublic === 'true' || isPublic === true) {
-      where.publishDate = {
-        lte: new Date()
-      };
+      where.publishingStatus = 'PUBLISHED';
+      where.publishDate = { lte: new Date() };
+      where.AND = [
+        { OR: [{ scheduledPublishAt: null }, { scheduledPublishAt: { lte: new Date() } }] },
+        { OR: [{ scheduledUnpublishAt: null }, { scheduledUnpublishAt: { gt: new Date() } }] },
+      ];
     }
 
     const blog = await prisma.blogPost.findFirst({
@@ -96,19 +110,45 @@ const createBlog = async (req, res) => {
     title,
     slug,
     category,
-    tags, // Comma separated string
+    tags,
     featuredImage,
     richText,
     seoTitle,
     seoDescription,
-    publishDate
+    publishDate,
+    publishingStatus,
+    scheduledPublishAt,
+    scheduledUnpublishAt,
   } = req.body;
 
-  try {
-    // Validate featuredImage URL
-    if (featuredImage) {
-    }
+  if (!title || !title.trim() || !category || !category.trim() || !featuredImage || !featuredImage.trim() || !richText || !richText.trim()) {
+    return res.status(400).json({ message: 'Title, Category, Featured Image URL, and Article content are required fields.' });
+  }
 
+  let parsedDate = new Date();
+  if (publishDate) {
+    parsedDate = new Date(publishDate);
+    if (isNaN(parsedDate.getTime())) {
+      return res.status(400).json({ message: 'Invalid publish date format.' });
+    }
+  }
+
+  // Determine initial status based on user role & requested status
+  let finalStatus = publishingStatus || 'PUBLISHED';
+  let submittedForApprovalAt = null;
+  let approvedById = null;
+
+  // CO_ADMIN approval workflow rule
+  if (req.user?.role === 'CO_ADMIN') {
+    if (finalStatus === 'PUBLISHED' || finalStatus === 'PENDING_APPROVAL') {
+      finalStatus = 'PENDING_APPROVAL';
+      submittedForApprovalAt = new Date();
+    }
+  } else if (finalStatus === 'PUBLISHED') {
+    approvedById = req.user?.id || null;
+  }
+
+  try {
     let finalSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     const slugExists = await prisma.blogPost.findFirst({
       where: { slug: finalSlug, deletedAt: null }
@@ -120,25 +160,45 @@ const createBlog = async (req, res) => {
 
     const blog = await prisma.blogPost.create({
       data: {
-        title,
+        title: title.trim(),
         slug: finalSlug,
-        category,
-        tags: tags || '',
-        featuredImage,
-        richText,
-        seoTitle,
-        seoDescription,
-        publishDate: publishDate ? new Date(publishDate) : new Date(),
+        category: category.trim(),
+        tags: tags ? tags.trim() : '',
+        featuredImage: featuredImage.trim(),
+        richText: richText.trim(),
+        seoTitle: seoTitle ? seoTitle.trim() : null,
+        seoDescription: seoDescription ? seoDescription.trim() : null,
+        publishingStatus: finalStatus,
+        scheduledPublishAt: scheduledPublishAt ? new Date(scheduledPublishAt) : null,
+        scheduledUnpublishAt: scheduledUnpublishAt ? new Date(scheduledUnpublishAt) : null,
+        submittedForApprovalAt,
+        approvedById,
+        createdById: req.user?.id || null,
+        publishDate: parsedDate,
       }
     });
 
-    await prisma.activityLog.create({
-      data: {
-        action: 'CREATE_BLOG',
-        details: `Published blog post: ${title}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
-      }
+    await logActivity(req, {
+      action: finalStatus === 'PENDING_APPROVAL' ? 'BLOG_SUBMITTED_APPROVAL' : 'CREATE_BLOG',
+      details: finalStatus === 'PENDING_APPROVAL'
+        ? `Submitted blog post for approval: "${title}"`
+        : `Created blog post: "${title}" (Status: ${finalStatus})`,
+      newValue: blog,
     });
+
+    if (finalStatus === 'PENDING_APPROVAL') {
+      const NotificationService = require('../services/notification.service');
+      await NotificationService.createNotification({
+        senderId: req.user?.id,
+        recipientRole: 'SUPER_ADMIN',
+        type: 'BLOG_SUBMITTED',
+        title: 'Blog Awaiting Approval',
+        message: `Blog "${title.trim()}" has been submitted for approval.`,
+        entityType: 'BlogPost',
+        entityId: blog.id,
+        priority: 'HIGH',
+      });
+    }
 
     res.status(201).json(blog);
   } catch (error) {
@@ -159,8 +219,23 @@ const updateBlog = async (req, res) => {
     richText,
     seoTitle,
     seoDescription,
-    publishDate
+    publishDate,
+    publishingStatus,
+    scheduledPublishAt,
+    scheduledUnpublishAt,
   } = req.body;
+
+  if (!title || !title.trim() || !category || !category.trim() || !featuredImage || !featuredImage.trim() || !richText || !richText.trim()) {
+    return res.status(400).json({ message: 'Title, Category, Featured Image URL, and Article content are required fields.' });
+  }
+
+  let parsedDate;
+  if (publishDate) {
+    parsedDate = new Date(publishDate);
+    if (isNaN(parsedDate.getTime())) {
+      return res.status(400).json({ message: 'Invalid publish date format.' });
+    }
+  }
 
   try {
     const existing = await prisma.blogPost.findFirst({
@@ -169,6 +244,21 @@ const updateBlog = async (req, res) => {
 
     if (!existing) {
       return res.status(404).json({ message: 'Blog post not found' });
+    }
+
+    let finalStatus = publishingStatus !== undefined ? publishingStatus : existing.publishingStatus;
+    let submittedForApprovalAt = existing.submittedForApprovalAt;
+    let approvedById = existing.approvedById;
+
+    // CO_ADMIN approval workflow enforcement
+    if (req.user?.role === 'CO_ADMIN') {
+      if (finalStatus === 'PUBLISHED') {
+        finalStatus = 'PENDING_APPROVAL';
+        submittedForApprovalAt = new Date();
+      }
+    } else if (finalStatus === 'PUBLISHED' && existing.publishingStatus === 'PENDING_APPROVAL') {
+      // Admin/Super Admin approving content
+      approvedById = req.user?.id || null;
     }
 
     let finalSlug = slug || existing.slug;
@@ -181,32 +271,74 @@ const updateBlog = async (req, res) => {
       }
     }
 
-    // Validate featuredImage URL
-    if (featuredImage) {
-    }
-
     const updated = await prisma.blogPost.update({
       where: { id },
       data: {
-        title,
+        title: title.trim(),
         slug: finalSlug,
-        category,
-        tags: tags !== undefined ? tags : existing.tags,
-        featuredImage,
-        richText,
-        seoTitle,
-        seoDescription,
-        publishDate: publishDate ? new Date(publishDate) : undefined,
+        category: category.trim(),
+        tags: tags !== undefined ? tags.trim() : existing.tags,
+        featuredImage: featuredImage.trim(),
+        richText: richText.trim(),
+        seoTitle: seoTitle ? seoTitle.trim() : null,
+        seoDescription: seoDescription ? seoDescription.trim() : null,
+        publishingStatus: finalStatus,
+        scheduledPublishAt: scheduledPublishAt !== undefined ? (scheduledPublishAt ? new Date(scheduledPublishAt) : null) : existing.scheduledPublishAt,
+        scheduledUnpublishAt: scheduledUnpublishAt !== undefined ? (scheduledUnpublishAt ? new Date(scheduledUnpublishAt) : null) : existing.scheduledUnpublishAt,
+        submittedForApprovalAt,
+        approvedById,
+        publishDate: parsedDate || existing.publishDate,
       }
     });
 
-    await prisma.activityLog.create({
-      data: {
-        action: 'UPDATE_BLOG',
-        details: `Updated blog post: ${title}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
-      }
+    const isApproval = existing.publishingStatus === 'PENDING_APPROVAL' && finalStatus === 'PUBLISHED';
+    const isRejection = existing.publishingStatus === 'PENDING_APPROVAL' && (finalStatus === 'DRAFT' || finalStatus === 'ARCHIVED' || finalStatus === 'REJECTED');
+    const isNewSubmission = existing.publishingStatus !== 'PENDING_APPROVAL' && finalStatus === 'PENDING_APPROVAL';
+
+    await logActivity(req, {
+      action: isApproval ? 'BLOG_APPROVED' : 'UPDATE_BLOG',
+      details: isApproval
+        ? `Approved and published blog post: "${title}"`
+        : `Updated blog post: "${title}" (Status: ${finalStatus})`,
+      previousValue: existing,
+      newValue: updated,
     });
+
+    const NotificationService = require('../services/notification.service');
+    const targetRecipientId = existing.createdById || null;
+
+    if (isApproval) {
+      await NotificationService.createNotification({
+        senderId: req.user?.id,
+        recipientId: targetRecipientId,
+        type: 'BLOG_APPROVED',
+        title: 'Blog Approved',
+        message: `Blog "${title.trim()}" has been approved and published.`,
+        entityType: 'BlogPost',
+        entityId: updated.id,
+      });
+    } else if (isRejection) {
+      await NotificationService.createNotification({
+        senderId: req.user?.id,
+        recipientId: targetRecipientId,
+        type: 'BLOG_REJECTED',
+        title: 'Blog Rejected',
+        message: `Blog "${title.trim()}" has been rejected.`,
+        entityType: 'BlogPost',
+        entityId: updated.id,
+      });
+    } else if (isNewSubmission) {
+      await NotificationService.createNotification({
+        senderId: req.user?.id,
+        recipientRole: 'SUPER_ADMIN',
+        type: 'BLOG_SUBMITTED',
+        title: 'Blog Awaiting Approval',
+        message: `Blog "${title.trim()}" has been submitted for approval.`,
+        entityType: 'BlogPost',
+        entityId: updated.id,
+        priority: 'HIGH',
+      });
+    }
 
     res.json(updated);
   } catch (error) {
@@ -219,17 +351,23 @@ const updateBlog = async (req, res) => {
 const deleteBlog = async (req, res) => {
   const { id } = req.params;
   try {
-    const blog = await prisma.blogPost.update({
-      where: { id },
-      data: { deletedAt: new Date() }
+    const existing = await prisma.blogPost.findFirst({
+      where: { id, deletedAt: null }
     });
 
-    await prisma.activityLog.create({
-      data: {
-        action: 'DELETE_BLOG',
-        details: `Soft-deleted blog post: ${blog.title}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
-      }
+    if (!existing) {
+      return res.status(404).json({ message: 'Blog post not found' });
+    }
+
+    const blog = await prisma.blogPost.update({
+      where: { id },
+      data: { deletedAt: new Date(), publishingStatus: 'ARCHIVED' }
+    });
+
+    await logActivity(req, {
+      action: 'DELETE_BLOG',
+      details: `Soft-deleted blog post: ${blog.title}`,
+      previousValue: existing,
     });
 
     res.json({ message: 'Blog post soft-deleted successfully' });
@@ -246,4 +384,3 @@ module.exports = {
   updateBlog,
   deleteBlog,
 };
-

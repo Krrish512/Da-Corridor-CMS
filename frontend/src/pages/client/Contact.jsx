@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { 
   MapPin, Phone, Mail, Clock, Send, CheckCircle2, Facebook, Twitter, Linkedin, Instagram 
@@ -6,6 +6,29 @@ import {
 
 import { useToast } from '../../context/ToastContext';
 import api from '../../utils/api';
+import SEO from '../../components/common/SEO';
+
+const CONTACT_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "name": "Contact Da' Corridor Architecture",
+  "description": "Connect with Da' Corridor for new project inquiries, consultation scheduling, and office location details.",
+  "url": "https://dacorridor.com/contact",
+  "mainEntity": {
+    "@type": "Organization",
+    "name": "Da' Corridor",
+    "telephone": "+1-212-555-0199",
+    "email": "contact@dacorridor.com",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "740 Fifth Avenue, Suite 1800",
+      "addressLocality": "New York",
+      "addressRegion": "NY",
+      "postalCode": "10019",
+      "addressCountry": "US"
+    }
+  }
+};
 
 const Contact = () => {
   const { addToast } = useToast();
@@ -20,10 +43,12 @@ const Contact = () => {
     message: '',
   });
 
-  // Query Office Details
+  // Query Office Details — same queryKey as ClientLayout; TanStack Query deduplicates the fetch.
+  // staleTime aligned to 10 min (matches ClientLayout) so cache behaviour is consistent.
   const { data: contactInfo, isLoading } = useQuery({
     queryKey: ['publicContactInfo'],
     queryFn: () => api.get('/contact/details').then(res => res.data),
+    staleTime: 1000 * 60 * 10,
   });
 
   // Send message mutation
@@ -56,6 +81,12 @@ const Contact = () => {
 
   return (
     <div className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <SEO
+        title="Contact Studio & Inquiries"
+        description="Connect with Da' Corridor for new project inquiries, consultation scheduling, and office location details."
+        path="/contact"
+        schema={CONTACT_SCHEMA}
+      />
       {/* HEADER */}
       <div className="text-center max-w-3xl mx-auto mb-16">
         <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>
@@ -188,7 +219,7 @@ const Contact = () => {
               </div>
               <h2 className="text-2xl font-bold font-display text-neutral-950 dark:text-white">Message Transmitted</h2>
               <p className="text-sm font-light text-neutral-500 dark:text-neutral-400 max-w-md mx-auto leading-relaxed">
-                Thank you for your interest in ArchStudio. Your project proposal or general inquiry has been saved. One of our design coordinators will follow up shortly.
+                Thank you for your interest in Da' Corridor. Your project proposal or general inquiry has been saved. One of our design coordinators will follow up shortly.
               </p>
               <button
                 onClick={() => setSubmitted(false)}

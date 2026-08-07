@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
+const prisma = require('../utils/db');
 
-const protect = (req, res, next) => {
+const protect = async (req, res, next) => {
   let token;
 
   if (
@@ -12,14 +13,34 @@ const protect = (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
 
       // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'arch_portfolio_cms_secret_key_2026_unbreakable_secret');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Add user from payload
-      req.user = decoded;
-      next();
+      // Verify user directly in the database (Single Source of Truth)
+      const user = await prisma.user.findFirst({
+        where: {
+          id: decoded.id,
+          isActive: true,
+          deletedAt: null,
+        },
+      });
+
+      if (!user) {
+        return res.status(401).json({ message: 'Not authorized, user account deactivated or deleted' });
+      }
+
+      // Attach dynamic database claims
+      req.user = {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      };
+      return next();
     } catch (error) {
       console.error('[AUTH ERROR] Token verification failed:', error.message);
-      return res.status(401).json({ message: 'Not authorized, token failed' });
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({ message: 'Token expired, please log in again', code: 'TOKEN_EXPIRED' });
+      }
+      return res.status(401).json({ message: 'Not authorized, token invalid or failed' });
     }
   }
 
@@ -40,15 +61,30 @@ const authorize = (...roles) => {
   };
 };
 
-const optionalProtect = (req, res, next) => {
+const optionalProtect = async (req, res, next) => {
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
   ) {
     try {
       const token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'arch_portfolio_cms_secret_key_2026_unbreakable_secret');
-      req.user = decoded;
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      
+      const user = await prisma.user.findFirst({
+        where: {
+          id: decoded.id,
+          isActive: true,
+          deletedAt: null,
+        },
+      });
+
+      if (user) {
+        req.user = {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+        };
+      }
     } catch (error) {
       console.warn('[AUTH OPTIONAL] Token verification failed:', error.message);
     }

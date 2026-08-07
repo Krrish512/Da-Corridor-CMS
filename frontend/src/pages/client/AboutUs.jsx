@@ -1,40 +1,53 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  Users, Target, Eye, Facebook, Twitter, Linkedin, Instagram 
+import {
+  Users, Target, Eye, Facebook, Twitter, Linkedin, Instagram
 } from 'lucide-react';
 
 import api from '../../utils/api';
+import SEO from '../../components/common/SEO';
 
 const AboutUs = () => {
+  const STATIC_QUERY_OPTIONS = { staleTime: 1000 * 60 * 10 };
+
   // Fetch About Section
   const { data: about } = useQuery({
     queryKey: ['publicAbout'],
     queryFn: () => api.get('/website/about').then(res => res.data),
+    ...STATIC_QUERY_OPTIONS,
   });
 
   // Fetch Team Members
   const { data: team } = useQuery({
     queryKey: ['publicTeam'],
     queryFn: () => api.get('/team').then(res => res.data || []),
+    ...STATIC_QUERY_OPTIONS,
   });
 
   // Fetch Partners
   const { data: partners } = useQuery({
     queryKey: ['publicPartners'],
     queryFn: () => api.get('/partners').then(res => res.data || []),
+    ...STATIC_QUERY_OPTIONS,
   });
 
   return (
     <div className="flex flex-col py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <SEO
+        title="About Our Studio & Practice"
+        description="Learn about Da' Corridor's architectural philosophy, principal design team, core competencies, vision, and global design partners."
+        path="/about"
+      />
       {/* 1. TOP STUDIO OVERVIEW */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center mb-24">
         {/* Profile Image container */}
         <div className="lg:col-span-5 relative">
           <div className="absolute inset-0 bg-neutral-900/10 dark:bg-white/10 rounded-sm transform translate-x-4 translate-y-4 -z-10" />
-          <img 
-            src={about?.profileImage || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600'} 
-            alt={about?.name || ' Elena Vance - ArchStudio'} 
+          <img
+            src={about?.profileImage || 'miss'}
+            alt={about?.name || ' mmiss'}
+            loading="lazy"
+            decoding="async"
             className="w-full h-auto aspect-[4/5] object-cover object-center rounded-sm border border-neutral-200 dark:border-neutral-800 shadow-md"
           />
         </div>
@@ -45,7 +58,7 @@ const AboutUs = () => {
             About Our Practice
           </span>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight font-display text-neutral-950 dark:text-white mt-2 mb-6">
-            {about?.name || 'ArchStudio Practice'}
+            {about?.name || 'Miss-Patel - Founder & Principal Da\' Corridor'}
           </h1>
           <p className="text-sm font-semibold tracking-wider text-neutral-400 uppercase mb-6">
             {about?.profession || 'High-End Minimalist Architecture'}
@@ -54,7 +67,7 @@ const AboutUs = () => {
             {about?.about || 'A multi-disciplinary architecture and spatial planning firm based in New York. We craft timeless spaces globally.'}
           </p>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 font-light leading-relaxed mb-8">
-            {about?.biography || 'Founded in 2012 by principal architect Elena Vance, ArchStudio has grown into a highly recognized brand. We believe in removing the unnecessary to celebrate the essential, creating residences and corporate structures that feel deeply connected to their environment.'}
+            {about?.biography || 'Founded in 2012 by principal architect Miss-Patel, Da\' Corridor has grown into a highly recognized brand. We believe in removing the unnecessary to celebrate the essential, creating residences and corporate structures that feel deeply connected to their environment.'}
           </p>
 
           {/* Skills / Focus areas tags */}
@@ -65,8 +78,8 @@ const AboutUs = () => {
               </h3>
               <div className="flex flex-wrap gap-2">
                 {about.skills.split(',').map((skill) => (
-                  <span 
-                    key={skill} 
+                  <span
+                    key={skill}
                     className="text-xs font-medium bg-neutral-200 text-neutral-800 dark:bg-neutral-800/80 dark:text-neutral-300 px-3 py-1.5 rounded-sm"
                   >
                     {skill.trim()}
@@ -127,16 +140,18 @@ const AboutUs = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {team.map((member) => (
-              <div 
-                key={member.id} 
+              <div
+                key={member.id}
                 className="group border border-neutral-300/60 dark:border-neutral-800 bg-white dark:bg-neutral-900/10 rounded-sm overflow-hidden flex flex-col justify-between"
               >
                 <div>
                   <div className="aspect-square relative overflow-hidden bg-neutral-100">
                     {member.photo ? (
-                      <img 
-                        src={member.photo} 
-                        alt={member.name} 
+                      <img
+                        src={member.photo}
+                        alt={member.name}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
@@ -161,22 +176,22 @@ const AboutUs = () => {
                 {/* Social icons */}
                 <div className="px-6 py-4 border-t border-neutral-100 dark:border-neutral-800/80 flex gap-4 text-neutral-400">
                   {member.facebook && (
-                    <a href={member.facebook} target="_blank" rel="noreferrer" className="transition-colors" style={{ color: 'rgba(107,114,128,1)' }} onMouseEnter={e => e.currentTarget.style.color='#D4AF37'} onMouseLeave={e => e.currentTarget.style.color='rgba(107,114,128,1)'}>
+                    <a href={member.facebook} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} on Facebook`} className="transition-colors" style={{ color: 'rgba(107,114,128,1)' }} onMouseEnter={e => e.currentTarget.style.color = '#D4AF37'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(107,114,128,1)'}>
                       <Facebook size={16} />
                     </a>
                   )}
                   {member.twitter && (
-                    <a href={member.twitter} target="_blank" rel="noreferrer" className="transition-colors" style={{ color: 'rgba(107,114,128,1)' }} onMouseEnter={e => e.currentTarget.style.color='#D4AF37'} onMouseLeave={e => e.currentTarget.style.color='rgba(107,114,128,1)'}>
+                    <a href={member.twitter} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} on Twitter`} className="transition-colors" style={{ color: 'rgba(107,114,128,1)' }} onMouseEnter={e => e.currentTarget.style.color = '#D4AF37'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(107,114,128,1)'}>
                       <Twitter size={16} />
                     </a>
                   )}
                   {member.linkedin && (
-                    <a href={member.linkedin} target="_blank" rel="noreferrer" className="transition-colors" style={{ color: 'rgba(107,114,128,1)' }} onMouseEnter={e => e.currentTarget.style.color='#D4AF37'} onMouseLeave={e => e.currentTarget.style.color='rgba(107,114,128,1)'}>
+                    <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} on LinkedIn`} className="transition-colors" style={{ color: 'rgba(107,114,128,1)' }} onMouseEnter={e => e.currentTarget.style.color = '#D4AF37'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(107,114,128,1)'}>
                       <Linkedin size={16} />
                     </a>
                   )}
                   {member.instagram && (
-                    <a href={member.instagram} target="_blank" rel="noreferrer" className="transition-colors" style={{ color: 'rgba(107,114,128,1)' }} onMouseEnter={e => e.currentTarget.style.color='#D4AF37'} onMouseLeave={e => e.currentTarget.style.color='rgba(107,114,128,1)'}>
+                    <a href={member.instagram} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} on Instagram`} className="transition-colors" style={{ color: 'rgba(107,114,128,1)' }} onMouseEnter={e => e.currentTarget.style.color = '#D4AF37'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(107,114,128,1)'}>
                       <Instagram size={16} />
                     </a>
                   )}
@@ -201,17 +216,20 @@ const AboutUs = () => {
 
           <div className="flex flex-wrap items-center justify-center gap-12 py-6 filter grayscale opacity-60 dark:invert">
             {partners.map((partner) => (
-              <a 
-                key={partner.id} 
-                href={partner.websiteUrl || '#'} 
-                target="_blank" 
-                rel="noreferrer" 
+              <a
+                key={partner.id}
+                href={partner.websiteUrl || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:scale-105 transition-transform"
                 title={partner.companyName}
+                aria-label={`Visit ${partner.companyName} website`}
               >
-                <img 
-                  src={partner.logo} 
-                  alt={partner.companyName} 
+                <img
+                  src={partner.logo}
+                  alt={partner.companyName}
+                  loading="lazy"
+                  decoding="async"
                   className="h-10 w-auto object-contain"
                 />
               </a>

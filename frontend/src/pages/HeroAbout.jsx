@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Globe, FileText, Award, Cpu, Shield, Plus, Edit2, Trash2, X, Save
@@ -6,13 +7,30 @@ import {
 
 import { useToast } from '../context/ToastContext';
 import api from '../utils/api';
+import MediaPicker from '../components/ui/media/MediaPicker';
+import DynamicIcon from '../components/ui/DynamicIcon';
+import { SERVICE_ICON_LIST } from '../utils/serviceIcons';
+
+// Derive which tab to show from the current URL path
+const getTabFromPath = (pathname) => {
+  const segment = pathname.split('/').pop();
+  const valid = ['hero', 'about', 'achievements', 'process', 'why-choose-us'];
+  return valid.includes(segment) ? segment : 'hero';
+};
 
 const HeroAbout = () => {
   const queryClient = useQueryClient();
   const { addToast } = useToast();
-  
+  const location = useLocation();
+  const navigate = useNavigate();
+
   // Navigation tabs: 'hero' | 'about' | 'achievements' | 'process' | 'why-choose-us'
-  const [activeTab, setActiveTab] = useState('hero');
+  const [activeTab, setActiveTab] = useState(() => getTabFromPath(location.pathname));
+
+  // Sync tab when navigating between these routes
+  useEffect(() => {
+    setActiveTab(getTabFromPath(location.pathname));
+  }, [location.pathname]);
 
   const [backgroundImage, setBackgroundImage] = useState('');
   const [profileImage, setProfileImage] = useState('');
@@ -55,14 +73,14 @@ const HeroAbout = () => {
   });
 
   useEffect(() => {
-    if (heroData?.backgroundImage) {
-      setBackgroundImage(heroData.backgroundImage);
+    if (heroData) {
+      setBackgroundImage(heroData.backgroundImage || '');
     }
   }, [heroData]);
 
   useEffect(() => {
-    if (aboutData?.profileImage) {
-      setProfileImage(aboutData.profileImage);
+    if (aboutData) {
+      setProfileImage(aboutData.profileImage || '');
     }
   }, [aboutData]);
 
@@ -72,8 +90,8 @@ const HeroAbout = () => {
   const updateHeroMutation = useMutation({
     mutationFn: (data) => api.put('/website/hero', data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['hero']);
-      queryClient.invalidateQueries(['publicHero']);
+      queryClient.invalidateQueries({ queryKey: ['hero'] });
+      queryClient.invalidateQueries({ queryKey: ['publicHero'] });
       addToast('Hero section updated successfully!', 'success');
     },
     onError: () => addToast('Failed to update Hero section.', 'error')
@@ -82,8 +100,8 @@ const HeroAbout = () => {
   const updateAboutMutation = useMutation({
     mutationFn: (data) => api.put('/website/about', data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['about']);
-      queryClient.invalidateQueries(['publicAbout']);
+      queryClient.invalidateQueries({ queryKey: ['about'] });
+      queryClient.invalidateQueries({ queryKey: ['publicAbout'] });
       addToast('About section updated successfully!', 'success');
     },
     onError: () => addToast('Failed to update About section.', 'error')
@@ -156,8 +174,10 @@ const HeroAbout = () => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-    
-    if (backgroundImage) {
+
+    if (!data.heading?.trim() || !data.subHeading?.trim() || !data.ctaText?.trim() || !data.ctaLink?.trim()) {
+      addToast('Please fill in all required fields (Heading, Subheading, CTA Text, and CTA Link).', 'error');
+      return;
     }
     
     data.backgroundImage = backgroundImage;
@@ -169,7 +189,15 @@ const HeroAbout = () => {
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
 
-    if (profileImage) {
+    if (!data.name?.trim() || !data.profession?.trim() || !data.about?.trim() || !data.biography?.trim()) {
+      addToast('Please fill in all required fields (Studio Name, Profession, Intro, and Biography).', 'error');
+      return;
+    }
+
+    const exp = parseInt(data.experience, 10);
+    if (isNaN(exp) || exp < 0) {
+      addToast('Years of Experience must be a valid non-negative number.', 'error');
+      return;
     }
 
     data.profileImage = profileImage;
@@ -179,16 +207,41 @@ const HeroAbout = () => {
   const handleAchievementsSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    updateAchievementsMutation.mutate(Object.fromEntries(formData.entries()));
+    const data = Object.fromEntries(formData.entries());
+
+    const exp = parseInt(data.yearsExperience, 10);
+    const projects = parseInt(data.projectsCompleted, 10);
+    const clients = parseInt(data.happyClients, 10);
+    const aw = parseInt(data.awards, 10);
+
+    if (isNaN(exp) || exp < 0 || isNaN(projects) || projects < 0 || isNaN(clients) || clients < 0 || isNaN(aw) || aw < 0) {
+      addToast('All counters (Years, Projects, Clients, Awards) must be valid non-negative numbers.', 'error');
+      return;
+    }
+
+    updateAchievementsMutation.mutate(data);
   };
 
   const handleStepSubmit = (e) => {
     e.preventDefault();
+    if (!stepForm.title?.trim() || !stepForm.description?.trim()) {
+      addToast('Step Title and Description are required.', 'error');
+      return;
+    }
+    const num = parseInt(stepForm.stepNumber, 10);
+    if (isNaN(num) || num <= 0) {
+      addToast('Step Number must be a positive number.', 'error');
+      return;
+    }
     saveStepMutation.mutate(editingStep ? { ...stepForm, id: editingStep.id } : stepForm);
   };
 
   const handleWhySubmit = (e) => {
     e.preventDefault();
+    if (!whyForm.title?.trim() || !whyForm.description?.trim()) {
+      addToast('Title and Description are required.', 'error');
+      return;
+    }
     saveWhyMutation.mutate(editingWhy ? { ...whyForm, id: editingWhy.id } : whyForm);
   };
 
@@ -245,7 +298,7 @@ const HeroAbout = () => {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => navigate(`/admin/${tab.id}`)}
               className={`flex items-center gap-2 pb-3 pt-1 border-b-2 -mb-px transition-all ${
                 isActive
                   ? 'border-neutral-900 text-neutral-900 dark:border-neutral-100 dark:text-neutral-100'
@@ -285,14 +338,16 @@ const HeroAbout = () => {
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Background Image URL</label>
-              <input
-                type="text"
-                placeholder="https://example.com/image.jpg"
+            <div className="col-span-2 space-y-1.5">
+              <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Hero Background Image</label>
+              <MediaPicker
                 value={backgroundImage}
-                onChange={(e) => setBackgroundImage(e.target.value)}
-                className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded-lg py-2 px-3 text-xs focus:outline-none"
+                onChange={(url) => setBackgroundImage(url)}
+                multiple={false}
+                outputFormat="url"
+                maxSizeMB={10}
+                allowedFormats={['image/jpeg', 'image/jpg', 'image/pjpeg', 'image/png', 'image/webp']}
+                acceptedFormatsText="Supports JPG, JPEG, PNG, WEBP up to 10MB"
               />
             </div>
 
@@ -394,14 +449,16 @@ const HeroAbout = () => {
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Profile Image URL</label>
-              <input
-                type="text"
-                placeholder="https://example.com/image.jpg"
+            <div className="col-span-2 space-y-1.5">
+              <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Profile Image</label>
+              <MediaPicker
                 value={profileImage}
-                onChange={(e) => setProfileImage(e.target.value)}
-                className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded-lg py-2 px-3 text-xs focus:outline-none"
+                onChange={(url) => setProfileImage(url)}
+                multiple={false}
+                outputFormat="url"
+                maxSizeMB={5}
+                allowedFormats={['image/jpeg', 'image/png', 'image/webp']}
+                acceptedFormatsText="Supports JPG, JPEG, PNG, WEBP up to 5MB"
               />
             </div>
 
@@ -462,8 +519,8 @@ const HeroAbout = () => {
 
       {/* ACHIEVEMENTS VIEW */}
       {activeTab === 'achievements' && (
-        <form onSubmit={handleAchievementsSubmit} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-6 shadow-premium max-w-xl space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleAchievementsSubmit} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-6 shadow-premium max-w-3xl space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Years of Practice</label>
               <input
@@ -520,7 +577,7 @@ const HeroAbout = () => {
 
       {/* PROCESS WORKFLOW VIEW */}
       {activeTab === 'process' && (
-        <div className="space-y-4 max-w-4xl">
+        <div className="space-y-6 max-w-3xl">
           <div className="flex justify-between items-center">
             <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500">Project Workflow Stages</h3>
             <button
@@ -583,7 +640,7 @@ const HeroAbout = () => {
 
       {/* WHY CHOOSE US VIEW */}
       {activeTab === 'why-choose-us' && (
-        <div className="space-y-4 max-w-4xl">
+        <div className="space-y-6 max-w-3xl">
           <div className="flex justify-between items-center">
             <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500">Why Clients Choose Us Cards</h3>
             <button
@@ -599,7 +656,10 @@ const HeroAbout = () => {
               whyData.map((why) => (
                 <div key={why.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-5 shadow-premium flex flex-col justify-between hover:border-neutral-400 dark:hover:border-neutral-600 transition-all">
                   <div>
-                    <span className="text-[10px] font-bold text-neutral-400 bg-neutral-100 dark:bg-neutral-800 py-1 px-2 rounded block w-fit mb-4 font-mono">{why.icon}</span>
+                    <span className="text-[10px] font-bold text-neutral-400 bg-neutral-100 dark:bg-neutral-800 py-1 px-2.5 rounded block w-fit mb-4 font-mono uppercase tracking-wider flex items-center gap-1.5">
+                      <DynamicIcon name={why.icon} size={14} className="text-neutral-700 dark:text-neutral-300" />
+                      {why.icon}
+                    </span>
                     <h4 className="text-sm font-bold">{why.title}</h4>
                     <p className="text-xs text-neutral-500 mt-2 leading-relaxed">{why.description}</p>
                   </div>
@@ -700,13 +760,23 @@ const HeroAbout = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[9px] font-bold text-neutral-400 uppercase">Icon (Lucide name)</label>
-              <input
-                type="text"
-                value={whyForm.icon}
-                onChange={(e) => setWhyForm({ ...whyForm, icon: e.target.value })}
-                className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1.5 px-2.5 text-xs"
-              />
+              <label className="text-[9px] font-bold text-neutral-400 uppercase">Card Icon</label>
+              <div className="flex items-center gap-2">
+                <select
+                  value={whyForm.icon}
+                  onChange={(e) => setWhyForm({ ...whyForm, icon: e.target.value })}
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1.5 px-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-neutral-950"
+                >
+                  {SERVICE_ICON_LIST.map((iconName) => (
+                    <option key={iconName} value={iconName}>
+                      {iconName}
+                    </option>
+                  ))}
+                </select>
+                <div className="h-8 w-8 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0 border border-neutral-200 dark:border-neutral-700">
+                  <DynamicIcon name={whyForm.icon} size={16} className="text-neutral-900 dark:text-white" />
+                </div>
+              </div>
             </div>
 
             <div className="space-y-1">

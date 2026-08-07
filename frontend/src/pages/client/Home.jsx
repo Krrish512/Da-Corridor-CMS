@@ -1,22 +1,38 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import {
-  ArrowRight, Compass, Layers, CheckSquare, Leaf, Hexagon, Shield, Mail, CheckCircle2,
-  Calendar, MapPin, Award, Users, Briefcase, FileText, Home as HomeIcon, Maximize, HelpCircle
-} from 'lucide-react';
+import { ArrowRight, Mail, CheckCircle2, Calendar, MapPin } from 'lucide-react';
 
 import { useToast } from '../../context/ToastContext';
 import api from '../../utils/api';
+import DynamicIcon from '../../components/ui/DynamicIcon';
+import SEO from '../../components/common/SEO';
 
-// Icon Map helper
-const iconMap = {
-  Compass, Layers, CheckSquare, Leaf, Hexagon, Shield, Award, Users, Briefcase, FileText, Home: HomeIcon, Maximize
-};
-
-const DynamicIcon = ({ name, className, size = 24 }) => {
-  const IconComponent = iconMap[name] || HelpCircle;
-  return <IconComponent className={className} size={size} />;
+const HOME_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": ["ArchitecturalFirm", "LocalBusiness", "Organization"],
+  "name": "Da' Corridor",
+  "alternateName": "Da' Corridor Architecture & Spatial Design",
+  "url": "https://dacorridor.com",
+  "logo": "https://dacorridor.com/Da'%20Corridor.png",
+  "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2000",
+  "description": "Da' Corridor is a luxury minimal architecture and spatial design practice based in New York crafting sustainable residences and corporate landmarks globally.",
+  "telephone": "+1-212-555-0199",
+  "email": "contact@dacorridor.com",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "740 Fifth Avenue, Suite 1800",
+    "addressLocality": "New York",
+    "addressRegion": "NY",
+    "postalCode": "10019",
+    "addressCountry": "US"
+  },
+  "sameAs": [
+    "https://facebook.com",
+    "https://twitter.com",
+    "https://linkedin.com",
+    "https://instagram.com"
+  ]
 };
 
 const getMediaType = (url) => {
@@ -47,12 +63,28 @@ const Home = () => {
   const [subscribed, setSubscribed] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
 
-  const { data: hero } = useQuery({ queryKey: ['publicHero'], queryFn: () => api.get('/website/hero').then(r => r.data) });
-  const { data: achievements } = useQuery({ queryKey: ['publicAchievements'], queryFn: () => api.get('/website/achievements').then(r => r.data) });
-  const { data: processSteps } = useQuery({ queryKey: ['publicProcess'], queryFn: () => api.get('/website/process').then(r => r.data) });
-  const { data: whyChooseUs } = useQuery({ queryKey: ['publicWhyChooseUs'], queryFn: () => api.get('/website/why-choose-us').then(r => r.data) });
-  const { data: featuredProjects } = useQuery({ queryKey: ['publicFeaturedProjects'], queryFn: () => api.get('/portfolio', { params: { featured: true, limit: 3 } }).then(r => r.data?.projects || []) });
-  const { data: services } = useQuery({ queryKey: ['publicServicesHome'], queryFn: () => api.get('/services').then(r => r.data || []) });
+  // Static CMS content — increase staleTime to 10 min; these only change when an admin edits them
+  const STATIC_QUERY_OPTIONS = { staleTime: 1000 * 60 * 10 };
+
+  const { data: hero } = useQuery({
+    queryKey: ['publicHero'],
+    queryFn: () => api.get('/website/hero').then(r => r.data),
+    placeholderData: {
+      heading: 'Architecture\nThat Endures',
+      subHeading: 'Crafting luxury spaces, sustainable structures, and minimal interiors for clients who demand the extraordinary.',
+      ctaText: 'View Our Work',
+      ctaLink: '/portfolio',
+      backgroundImage: '',
+      backgroundVideo: '',
+    },
+    ...STATIC_QUERY_OPTIONS,
+  });
+
+  const { data: achievements } = useQuery({ queryKey: ['publicAchievements'], queryFn: () => api.get('/website/achievements').then(r => r.data), ...STATIC_QUERY_OPTIONS });
+  const { data: processSteps } = useQuery({ queryKey: ['publicProcess'], queryFn: () => api.get('/website/process').then(r => r.data), ...STATIC_QUERY_OPTIONS });
+  const { data: whyChooseUs } = useQuery({ queryKey: ['publicWhyChooseUs'], queryFn: () => api.get('/website/why-choose-us').then(r => r.data), ...STATIC_QUERY_OPTIONS });
+  const { data: featuredProjects } = useQuery({ queryKey: ['publicFeaturedProjects'], queryFn: () => api.get('/portfolio', { params: { featured: true, limit: 3 } }).then(r => r.data?.projects || []), ...STATIC_QUERY_OPTIONS });
+  const { data: services } = useQuery({ queryKey: ['publicServicesHome'], queryFn: () => api.get('/services').then(r => r.data || []), ...STATIC_QUERY_OPTIONS });
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
@@ -69,17 +101,39 @@ const Home = () => {
 
   return (
     <div className="flex flex-col">
+      <SEO
+        title="Premium Architecture & Spatial Design"
+        description="Crafting luxury minimal spaces, sustainable structures, and architectural landmarks for clients globally."
+        path="/"
+        schema={HOME_SCHEMA}
+      />
 
       {/* ── 1. HERO ───────────────────────────────────────────────────────── */}
       <section className="relative min-h-[92vh] flex items-center overflow-hidden" style={{ background: '#0A2540' }}>
-        {/* Background image */}
-        {hero?.backgroundImage && (
-          <img
-            src={hero.backgroundImage}
-            alt="ArchStudio architectural background"
-            className="absolute inset-0 w-full h-full object-cover object-center"
-            style={{ opacity: 0.35 }}
-          />
+        {/* Responsive Background Image (LCP Optimized - Only rendered when CMS background image exists) */}
+        {Boolean(hero?.backgroundImage) && (
+          <picture className="absolute inset-0 w-full h-full pointer-events-none">
+            {hero.backgroundImage.includes('/hero/') && (
+              <source
+                type="image/webp"
+                srcSet="/hero/hero-640w.webp 640w, /hero/hero-1024w.webp 1024w, /hero/hero-1920w.webp 1920w"
+                sizes="100vw"
+              />
+            )}
+            <img
+              src={hero.backgroundImage}
+              srcSet={hero.backgroundImage.includes('/hero/') ? "/hero/hero-640w.webp 640w, /hero/hero-1024w.webp 1024w, /hero/hero-1920w.webp 1920w" : undefined}
+              sizes="100vw"
+              width="1920"
+              height="1080"
+              alt="Da' Corridor Architecture Hero"
+              loading="eager"
+              fetchPriority="high"
+              decoding="auto"
+              className="absolute inset-0 w-full h-full object-cover object-center"
+              style={{ opacity: 0.35 }}
+            />
+          </picture>
         )}
 
         {/* Video background (YouTube / Vimeo / mp4) */}
@@ -127,22 +181,22 @@ const Home = () => {
           </div>
 
           <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-white leading-tight mb-8 max-w-4xl">
-            {hero?.headline || 'Architecture\nThat Endures'}
+            {hero?.heading || 'Architecture\nThat Endures'}
           </h1>
 
           <p className="text-base sm:text-lg font-light leading-relaxed mb-10 max-w-xl" style={{ color: 'rgba(255,255,255,0.7)' }}>
-            {hero?.subheadline || 'Crafting luxury spaces, sustainable structures, and minimal interiors for clients who demand the extraordinary.'}
+            {hero?.subHeading || 'Crafting luxury spaces, sustainable structures, and minimal interiors for clients who demand the extraordinary.'}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
-              to="/portfolio"
+              to={hero?.ctaLink || '/portfolio'}
               className="inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-semibold uppercase tracking-wider rounded transition-all duration-200"
               style={{ background: '#D4AF37', color: '#0A2540' }}
               onMouseEnter={e => { e.currentTarget.style.background = '#B8941F'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(212,175,55,0.35)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = '#D4AF37'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
             >
-              View Our Work <ArrowRight size={16} />
+              {hero?.ctaText || 'View Our Work'} <ArrowRight size={16} />
             </Link>
             <Link
               to="/contact"
@@ -277,6 +331,10 @@ const Home = () => {
                 <img
                   src={project.coverImage}
                   alt={project.title}
+                  width="600"
+                  height="400"
+                  loading="lazy"
+                  decoding="async"
                   className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105 z-0"
                 />
                 <div className="absolute inset-0 z-10" style={{ background: 'linear-gradient(to top, rgba(10,37,64,0.9) 0%, rgba(10,37,64,0.3) 60%, transparent 100%)' }} />
@@ -374,7 +432,7 @@ const Home = () => {
             Updates
           </span>
           <h2 className="font-display text-3xl sm:text-4xl font-bold text-white mb-6">
-            Join the ArchStudio Newsletter
+            Join the Da' Corridor Newsletter
           </h2>
           <p className="text-sm font-light mb-10 leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
             Get quarterly design insights, architectural analysis, new project reveals, and sustainable materials reviews directly in your inbox.

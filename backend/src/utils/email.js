@@ -25,15 +25,15 @@ const getTransporter = () => {
  * @param {string} options.html The HTML body of the email
  */
 const sendAdminNotification = async ({ subject, text, html }) => {
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@archstudio.com';
-  const senderEmail = process.env.SENDER_EMAIL || 'noreply@archstudio.com';
+  const adminEmail = process.env.ADMIN_EMAIL || process.env.INITIAL_ADMIN_EMAIL || 'admin@dacorridor.com';
+  const senderEmail = process.env.SENDER_EMAIL || 'noreply@dacorridor.com';
 
   const transporter = getTransporter();
 
   if (transporter) {
     try {
       const info = await transporter.sendMail({
-        from: `"ArchStudio CMS" <${senderEmail}>`,
+        from: `"Da'Corridor CMS" <${senderEmail}>`,
         to: adminEmail,
         subject: subject,
         text: text,

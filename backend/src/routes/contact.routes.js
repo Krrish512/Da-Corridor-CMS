@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/auth.middleware');
+const { publicFormLimiter } = require('../middleware/rateLimiter');
 const {
   getContactDetails,
   updateContactDetails,
@@ -20,8 +21,8 @@ router.put('/details', protect, updateContactDetails);
 // ==========================================
 // CLIENT INQUIRIES / MESSAGES
 // ==========================================
-// Submit inquiry (Public)
-router.post('/messages', submitMessage);
+// Submit inquiry (Public) — rate-limited to prevent spam
+router.post('/messages', publicFormLimiter, submitMessage);
 
 // Admin Manage Inquiries (Protected)
 router.get('/messages/export', protect, exportMessagesCSV); // Defined before ID parameter

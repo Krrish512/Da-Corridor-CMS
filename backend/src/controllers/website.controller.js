@@ -1,4 +1,4 @@
-﻿const prisma = require('../utils/db');
+const prisma = require('../utils/db');
 
 // ==========================================
 // HERO SECTION CONTROLLERS
@@ -32,23 +32,33 @@ const getHero = async (req, res) => {
 const updateHero = async (req, res) => {
   const { heading, subHeading, backgroundImage, backgroundVideo, ctaText, ctaLink } = req.body;
 
+  if (!heading || !heading.trim() || !subHeading || !subHeading.trim() || !ctaText || !ctaText.trim() || !ctaLink || !ctaLink.trim()) {
+    return res.status(400).json({ message: 'Heading, Subheading, CTA Text, and CTA Link are required fields.' });
+  }
+
   try {
     const existingHero = await prisma.heroSection.findFirst({
       where: { deletedAt: null }
     });
 
-    // Validate backgroundImage URL
-    if (backgroundImage) {
-    }
     let hero;
+    const updateData = {
+      heading: heading.trim(),
+      subHeading: subHeading.trim(),
+      backgroundImage: backgroundImage && backgroundImage.trim() ? backgroundImage.trim() : null,
+      backgroundVideo: backgroundVideo && backgroundVideo.trim() ? backgroundVideo.trim() : null,
+      ctaText: ctaText.trim(),
+      ctaLink: ctaLink.trim(),
+    };
+
     if (existingHero) {
       hero = await prisma.heroSection.update({
         where: { id: existingHero.id },
-        data: { heading, subHeading, backgroundImage, backgroundVideo, ctaText, ctaLink }
+        data: updateData
       });
     } else {
       hero = await prisma.heroSection.create({
-        data: { heading, subHeading, backgroundImage, backgroundVideo, ctaText, ctaLink }
+        data: updateData
       });
     }
 
@@ -57,7 +67,7 @@ const updateHero = async (req, res) => {
       data: {
         action: 'UPDATE_HERO',
         details: 'Updated website Hero Section content',
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 
@@ -82,7 +92,7 @@ const getAbout = async (req, res) => {
     if (!about) {
       about = await prisma.aboutSection.create({
         data: {
-          name: "ArchStudio",
+          name: "Da' Corridor",
           profession: "Principal Architecture Practice",
           about: "A visionary design studio focused on building tomorrow's environments.",
           biography: "Founded in 2012, our work spans across public institutions, residential design, and landscape development.",
@@ -104,31 +114,42 @@ const getAbout = async (req, res) => {
 const updateAbout = async (req, res) => {
   const { name, profession, about, biography, experience, skills, vision, mission, resumeUrl, profileImage } = req.body;
 
+  if (!name || !name.trim() || !profession || !profession.trim() || !about || !about.trim() || !biography || !biography.trim()) {
+    return res.status(400).json({ message: 'Name, Profession, About, and Biography are required fields.' });
+  }
+
+  const parsedExp = parseInt(experience, 10);
+  if (isNaN(parsedExp) || parsedExp < 0) {
+    return res.status(400).json({ message: 'Years of Experience must be a valid non-negative number.' });
+  }
+
   try {
     const existingAbout = await prisma.aboutSection.findFirst({
       where: { deletedAt: null }
     });
 
-    // Validate profileImage URL
-    if (profileImage) {
-    }
+    const updateData = {
+      name: name.trim(),
+      profession: profession.trim(),
+      about: about.trim(),
+      biography: biography.trim(),
+      experience: parsedExp,
+      skills: skills ? skills.trim() : '',
+      vision: vision ? vision.trim() : '',
+      mission: mission ? mission.trim() : '',
+      resumeUrl: resumeUrl ? resumeUrl.trim() : null,
+      profileImage: profileImage ? profileImage.trim() : null,
+    };
+
     let updatedAbout;
     if (existingAbout) {
       updatedAbout = await prisma.aboutSection.update({
         where: { id: existingAbout.id },
-        data: {
-          name, profession, about, biography,
-          experience: parseInt(experience || '0', 10),
-          skills, vision, mission, resumeUrl, profileImage
-        }
+        data: updateData
       });
     } else {
       updatedAbout = await prisma.aboutSection.create({
-        data: {
-          name, profession, about, biography,
-          experience: parseInt(experience || '0', 10),
-          skills, vision, mission, resumeUrl, profileImage
-        }
+        data: updateData
       });
     }
 
@@ -136,7 +157,7 @@ const updateAbout = async (req, res) => {
       data: {
         action: 'UPDATE_ABOUT',
         details: 'Updated About page contents and bio',
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 
@@ -179,6 +200,15 @@ const getAchievements = async (req, res) => {
 const updateAchievements = async (req, res) => {
   const { yearsExperience, projectsCompleted, happyClients, awards } = req.body;
 
+  const exp = parseInt(yearsExperience, 10);
+  const projects = parseInt(projectsCompleted, 10);
+  const clients = parseInt(happyClients, 10);
+  const aw = parseInt(awards, 10);
+
+  if (isNaN(exp) || exp < 0 || isNaN(projects) || projects < 0 || isNaN(clients) || clients < 0 || isNaN(aw) || aw < 0) {
+    return res.status(400).json({ message: 'Years Experience, Projects Completed, Happy Clients, and Awards must be valid non-negative numbers.' });
+  }
+
   try {
     const existingAchievement = await prisma.achievement.findFirst({
       where: { deletedAt: null }
@@ -186,10 +216,10 @@ const updateAchievements = async (req, res) => {
 
     let updated;
     const data = {
-      yearsExperience: parseInt(yearsExperience || '0', 10),
-      projectsCompleted: parseInt(projectsCompleted || '0', 10),
-      happyClients: parseInt(happyClients || '0', 10),
-      awards: parseInt(awards || '0', 10),
+      yearsExperience: exp,
+      projectsCompleted: projects,
+      happyClients: clients,
+      awards: aw,
     };
 
     if (existingAchievement) {
@@ -205,7 +235,7 @@ const updateAchievements = async (req, res) => {
       data: {
         action: 'UPDATE_ACHIEVEMENTS',
         details: 'Updated dashboard and homepage key counters',
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 
@@ -236,21 +266,31 @@ const getProcessSteps = async (req, res) => {
 
 const createProcessStep = async (req, res) => {
   const { stepNumber, title, description, icon } = req.body;
+
+  if (!title || !title.trim() || !description || !description.trim()) {
+    return res.status(400).json({ message: 'Title and Description are required.' });
+  }
+
+  const num = parseInt(stepNumber, 10);
+  if (isNaN(num) || num <= 0) {
+    return res.status(400).json({ message: 'Step Number must be a positive integer.' });
+  }
+
   try {
     const step = await prisma.processStep.create({
       data: {
-        stepNumber: parseInt(stepNumber || '1', 10),
-        title,
-        description,
-        icon
+        stepNumber: num,
+        title: title.trim(),
+        description: description.trim(),
+        icon: icon ? icon.trim() : 'Compass'
       }
     });
 
     await prisma.activityLog.create({
       data: {
         action: 'CREATE_PROCESS',
-        details: `Created process step #${stepNumber}: ${title}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        details: `Created process step #${num}: ${title}`,
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 
@@ -264,22 +304,40 @@ const createProcessStep = async (req, res) => {
 const updateProcessStep = async (req, res) => {
   const { id } = req.params;
   const { stepNumber, title, description, icon } = req.body;
+
+  if (!title || !title.trim() || !description || !description.trim()) {
+    return res.status(400).json({ message: 'Title and Description are required.' });
+  }
+
+  const num = parseInt(stepNumber, 10);
+  if (isNaN(num) || num <= 0) {
+    return res.status(400).json({ message: 'Step Number must be a positive integer.' });
+  }
+
   try {
+    const existing = await prisma.processStep.findFirst({
+      where: { id, deletedAt: null }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: 'Process step not found.' });
+    }
+
     const step = await prisma.processStep.update({
       where: { id },
       data: {
-        stepNumber: parseInt(stepNumber || '1', 10),
-        title,
-        description,
-        icon
+        stepNumber: num,
+        title: title.trim(),
+        description: description.trim(),
+        icon: icon ? icon.trim() : 'Compass'
       }
     });
 
     await prisma.activityLog.create({
       data: {
         action: 'UPDATE_PROCESS',
-        details: `Updated process step #${stepNumber}: ${title}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        details: `Updated process step #${num}: ${title}`,
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 
@@ -293,6 +351,14 @@ const updateProcessStep = async (req, res) => {
 const deleteProcessStep = async (req, res) => {
   const { id } = req.params;
   try {
+    const existing = await prisma.processStep.findFirst({
+      where: { id, deletedAt: null }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: 'Process step not found.' });
+    }
+
     // SOFT DELETE: Set deletedAt
     const step = await prisma.processStep.update({
       where: { id },
@@ -303,7 +369,7 @@ const deleteProcessStep = async (req, res) => {
       data: {
         action: 'DELETE_PROCESS',
         details: `Soft-deleted process step #${step.stepNumber}: ${step.title}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 
@@ -333,16 +399,25 @@ const getWhyChooseUs = async (req, res) => {
 
 const createWhyChooseUs = async (req, res) => {
   const { icon, title, description } = req.body;
+
+  if (!title || !title.trim() || !description || !description.trim()) {
+    return res.status(400).json({ message: 'Title and Description are required.' });
+  }
+
   try {
     const choice = await prisma.whyChooseUs.create({
-      data: { icon, title, description }
+      data: {
+        icon: icon ? icon.trim() : 'Leaf',
+        title: title.trim(),
+        description: description.trim()
+      }
     });
 
     await prisma.activityLog.create({
       data: {
         action: 'CREATE_WHYCHOOSEUS',
         details: `Created Why Choose Us item: ${title}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 
@@ -356,17 +431,34 @@ const createWhyChooseUs = async (req, res) => {
 const updateWhyChooseUs = async (req, res) => {
   const { id } = req.params;
   const { icon, title, description } = req.body;
+
+  if (!title || !title.trim() || !description || !description.trim()) {
+    return res.status(400).json({ message: 'Title and Description are required.' });
+  }
+
   try {
+    const existing = await prisma.whyChooseUs.findFirst({
+      where: { id, deletedAt: null }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: 'Item not found.' });
+    }
+
     const choice = await prisma.whyChooseUs.update({
       where: { id },
-      data: { icon, title, description }
+      data: {
+        icon: icon ? icon.trim() : 'Leaf',
+        title: title.trim(),
+        description: description.trim()
+      }
     });
 
     await prisma.activityLog.create({
       data: {
         action: 'UPDATE_WHYCHOOSEUS',
         details: `Updated Why Choose Us item: ${title}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 
@@ -380,6 +472,14 @@ const updateWhyChooseUs = async (req, res) => {
 const deleteWhyChooseUs = async (req, res) => {
   const { id } = req.params;
   try {
+    const existing = await prisma.whyChooseUs.findFirst({
+      where: { id, deletedAt: null }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: 'Item not found.' });
+    }
+
     // SOFT DELETE: Set deletedAt
     const choice = await prisma.whyChooseUs.update({
       where: { id },
@@ -390,7 +490,7 @@ const deleteWhyChooseUs = async (req, res) => {
       data: {
         action: 'DELETE_WHYCHOOSEUS',
         details: `Soft-deleted Why Choose Us item: ${choice.title}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 

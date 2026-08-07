@@ -74,7 +74,7 @@ const subscribe = async (req, res) => {
                        <p>Hello Admin,</p>
                        <p>A new visitor has signed up for updates:</p>
                        <p><strong>Email Address:</strong> <a href="mailto:${email}">${email}</a></p>
-                       <p>You can view and export subscribers in the CMS dashboard: http://localhost:5173/admin/newsletter</p>`;
+                       <p>You can view and export subscribers in the CMS dashboard: ${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/newsletter</p>`;
 
     await sendAdminNotification({
       subject: emailSubject,
@@ -97,6 +97,14 @@ const subscribe = async (req, res) => {
 const deleteSubscriber = async (req, res) => {
   const { id } = req.params;
   try {
+    const existing = await prisma.newsletterSubscriber.findFirst({
+      where: { id, deletedAt: null }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: 'Subscriber not found.' });
+    }
+
     const subscriber = await prisma.newsletterSubscriber.update({
       where: { id },
       data: { deletedAt: new Date() }
@@ -106,7 +114,7 @@ const deleteSubscriber = async (req, res) => {
       data: {
         action: 'UNSUBSCRIBE_USER',
         details: `Soft-deleted subscriber: ${subscriber.email}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 

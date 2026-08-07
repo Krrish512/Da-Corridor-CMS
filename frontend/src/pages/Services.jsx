@@ -1,19 +1,26 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Edit2, Trash2, X, Save, ToggleLeft, ToggleRight } from 'lucide-react';
 
 import { useToast } from '../context/ToastContext';
 import api from '../utils/api';
 
+import { StatusBadge } from '../components/cms/StatusBadge';
+import { useAuth } from '../context/AuthContext';
+import MediaPicker from '../components/ui/media/MediaPicker';
+import DynamicIcon from '../components/ui/DynamicIcon';
+import { SERVICE_ICON_LIST } from '../utils/serviceIcons';
+
 const Services = () => {
   const queryClient = useQueryClient();
   const { addToast } = useToast();
+  const { user: currentUser } = useAuth();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
   
   // Form State
-  const [form, setForm] = useState({
+  const initialFormState = {
     title: '',
     icon: 'Home',
     shortDescription: '',
@@ -21,7 +28,11 @@ const Services = () => {
     image: '',
     displayOrder: 0,
     isActive: true,
-  });
+    publishingStatus: currentUser?.role === 'CO_ADMIN' ? 'PENDING_APPROVAL' : 'PUBLISHED',
+    scheduledPublishAt: '',
+    scheduledUnpublishAt: '',
+  };
+  const [form, setForm] = useState(initialFormState);
 
   // ----------------------------------------------------
   // QUERY
@@ -75,13 +86,8 @@ const Services = () => {
   const handleOpenAdd = () => {
     setEditingService(null);
     setForm({
-      title: '',
-      icon: 'Home',
-      shortDescription: '',
-      fullDescription: '',
-      image: '',
+      ...initialFormState,
       displayOrder: (services?.length || 0) + 1,
-      isActive: true,
     });
     setModalOpen(true);
   };
@@ -96,18 +102,21 @@ const Services = () => {
       image: service.image || '',
       displayOrder: service.displayOrder,
       isActive: service.isActive,
+      publishingStatus: service.publishingStatus || 'PUBLISHED',
+      scheduledPublishAt: service.scheduledPublishAt ? new Date(service.scheduledPublishAt).toISOString().slice(0, 16) : '',
+      scheduledUnpublishAt: service.scheduledUnpublishAt ? new Date(service.scheduledUnpublishAt).toISOString().slice(0, 16) : '',
     });
     setModalOpen(true);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.title || !form.shortDescription) {
-      addToast('Please fill out service Title and Short Description.', 'error');
+    if (!form.title?.trim() || !form.shortDescription?.trim() || !form.fullDescription?.trim()) {
+      addToast('Please fill out service Title, Short Description, and Full Description.', 'error');
       return;
     }
 
-        saveMutation.mutate(editingService ? { ...form, id: editingService.id } : form);
+    saveMutation.mutate(editingService ? { ...form, id: editingService.id } : form);
   };
 
   if (isLoading) {
@@ -146,9 +155,13 @@ const Services = () => {
             >
               <div>
                 <div className="flex justify-between items-start mb-4">
-                  <span className="text-[10px] font-bold text-neutral-400 bg-neutral-100 dark:bg-neutral-800 py-1 px-2.5 rounded font-mono uppercase tracking-wider">
-                    {service.icon}
-                  </span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-bold text-neutral-400 bg-neutral-100 dark:bg-neutral-800 py-1 px-2.5 rounded font-mono uppercase tracking-wider flex items-center gap-1.5">
+                      <DynamicIcon name={service.icon} size={14} className="text-neutral-700 dark:text-neutral-300" />
+                      {service.icon}
+                    </span>
+                    <StatusBadge status={service.publishingStatus} scheduledPublishAt={service.scheduledPublishAt} />
+                  </div>
                   <div className="flex items-center gap-1">
                     <span className="text-[9px] font-bold text-neutral-400 mr-2 uppercase">Order: {service.displayOrder}</span>
                     <button
@@ -161,9 +174,16 @@ const Services = () => {
                   </div>
                 </div>
 
-                <h3 className="text-sm font-bold flex items-center gap-2">
-                  {service.title}
-                  {!service.isActive && <span className="text-[8px] bg-neutral-100 text-neutral-500 py-0.5 px-1 rounded uppercase font-bold tracking-widest">Inactive</span>}
+                <h3 className="text-sm font-bold flex items-center justify-between gap-2">
+                  <span>{service.title}</span>
+                  {currentUser?.role !== 'CO_ADMIN' && service.publishingStatus === 'PENDING_APPROVAL' && (
+                    <button
+                      onClick={() => saveMutation.mutate({ ...service, publishingStatus: 'PUBLISHED' })}
+                      className="px-2 py-1 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 hover:bg-amber-200"
+                    >
+                      Approve & Publish
+                    </button>
+                  )}
                 </h3>
                 
                 <p className="text-xs text-neutral-800 dark:text-neutral-300 font-semibold mt-3 italic">
@@ -243,26 +263,34 @@ const Services = () => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-neutral-400 uppercase">Icon String</label>
-                <input
-                  type="text"
-                  value={form.icon}
-                  onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                  placeholder="Home, Briefcase, Maximize"
-                  className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1.5 px-2.5 text-xs"
-                />
+                <label className="text-[9px] font-bold text-neutral-400 uppercase">Service Icon</label>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={form.icon}
+                    onChange={(e) => setForm({ ...form, icon: e.target.value })}
+                    className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1.5 px-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-neutral-950"
+                  >
+                    {SERVICE_ICON_LIST.map((iconName) => (
+                      <option key={iconName} value={iconName}>
+                        {iconName}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="h-8 w-8 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0 border border-neutral-200 dark:border-neutral-700">
+                    <DynamicIcon name={form.icon} size={16} className="text-neutral-900 dark:text-white" />
+                  </div>
+                </div>
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1 col-span-3">
-                <label className="text-[9px] font-bold text-neutral-400 uppercase">Service Image URL</label>
-                <input
-                  type="text"
-                  placeholder="https://example.com/image.jpg"
+                <label className="text-[9px] font-bold text-neutral-400 uppercase">Service Cover Image</label>
+                <MediaPicker
                   value={form.image}
-                  onChange={(e) => setForm({ ...form, image: e.target.value })}
-                  className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1.5 px-2.5 text-xs"
+                  onChange={(url) => setForm({ ...form, image: url })}
+                  multiple={false}
+                  outputFormat="url"
                 />
               </div>
               <div className="space-y-1">

@@ -34,8 +34,8 @@ export default {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
         },
-        // ─── ArchStudio Brand Tokens ───────────────────────────────────────
-        arch: {
+        // ─── Da' Corridor Brand Tokens ───────────────────────────────────────
+        "Da' Corridor": {
           primary: '#0A2540',   // Royal Blue
           gold: '#D4AF37',   // Accent Gold
           'gold-dark': '#B8941F', // Gold hover state

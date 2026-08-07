@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
 
@@ -7,7 +7,7 @@ import { useToast } from '../context/ToastContext';
 import api from '../utils/api';
 
 const Login = () => {
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
 
@@ -26,6 +26,13 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({});
 
+  // Redirect authenticated user away from login page
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/admin/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
   // Pre-fill email if previously remembered
   useEffect(() => {
     const savedEmail = localStorage.getItem('arch_remember_email');
@@ -37,7 +44,6 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    // Better client-side validation
     const newErrors = {};
     if (!email) newErrors.email = 'Email is required.';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = 'Enter a valid email address.';
@@ -47,15 +53,14 @@ const Login = () => {
     setErrors({});
     setLoading(true);
     try {
-      const res = await login(email, password);
+      const res = await login(email, password, rememberMe);
       if (res.success) {
         if (rememberMe) {
           localStorage.setItem('arch_remember_email', email);
         } else {
           localStorage.removeItem('arch_remember_email');
         }
-        const savedUser = JSON.parse(localStorage.getItem('arch_user') || '{}');
-        addToast('Welcome back, ' + (savedUser.name || 'Admin'), 'success');
+        addToast('Welcome back, ' + (res.user?.name || 'Admin'), 'success');
         navigate('/admin/dashboard');
       } else {
         addToast(res.message || 'Authentication failed. Check your credentials.', 'error');
@@ -95,288 +100,304 @@ const Login = () => {
     }
   };
 
-  const inputClass = `
-    w-full bg-neutral-50 dark:bg-neutral-800 border rounded-lg py-2.5 text-xs 
-    focus:outline-none transition-all text-neutral-900 dark:text-white placeholder-neutral-400
-  `;
-
   return (
-    <div className="min-h-screen flex" style={{ background: '#F7F7F5' }}>
-
-      {/* ── Left Panel: Royal Blue Brand ─────────────────────────────────── */}
-      <div
-        className="hidden lg:flex lg:w-1/2 xl:w-5/12 flex-col justify-between p-12 relative overflow-hidden"
-        style={{ background: '#0A2540' }}
-      >
-        {/* Subtle background texture */}
-        <div
-          className="absolute inset-0 opacity-5"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 20% 50%, #D4AF37 0%, transparent 60%), radial-gradient(circle at 80% 10%, #D4AF37 0%, transparent 50%)',
-          }}
-        />
-
-        {/* Brand Mark */}
+    <div className="min-h-screen flex bg-[#F8F7F4] text-[#111827] font-sans antialiased selection:bg-[#111827] selection:text-white">
+      
+      {/* ── Left Column: Brand & Architecture Aesthetic ──────────────────────── */}
+      <div className="hidden lg:flex lg:w-1/2 xl:w-5/12 flex-col justify-between p-12 lg:p-16 border-r border-neutral-200/70 relative overflow-hidden bg-[#F8F7F4] select-none">
+        
+        {/* Top Branding Logo */}
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-16">
-            <span
-              className="h-9 w-9 rounded flex items-center justify-center font-display font-bold text-sm"
-              style={{ background: '#D4AF37', color: '#0A2540' }}
-            >
-              Da'
-            </span>
-            <span className="font-display font-bold text-xl tracking-widest uppercase text-white">
-              ArchStudio
-            </span>
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded flex items-center justify-center font-display font-bold text-sm tracking-wider shrink-0 bg-[#111827] text-[#C9A227]"
+            style={{ background: 'transparent', color: '#D4AF37' }}>
+              <img src="/Da' Corridor.png" alt="Logo" className="h-full w-full object-contain" />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-display font-bold text-xl tracking-widest uppercase text-[#111827]">
+                Da' Corridor
+              </span>
+              <span className="font-sans text-[10px] tracking-wider uppercase font-medium mt-0.5 text-neutral-500">
+                Architecture & Spatial Design
+              </span>
+            </div>
           </div>
+        </div>
 
-          <div className="mb-6">
-            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>
-              Studio Management
-            </span>
-            <h1 className="font-display text-4xl xl:text-5xl font-bold text-white mt-2 leading-tight">
-              Portfolio<br />Control Center
-            </h1>
-            <div className="w-10 h-0.5 mt-4" style={{ background: '#D4AF37' }} />
-          </div>
-
-          <p className="text-sm font-light leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)', maxWidth: '340px' }}>
-            Manage your architecture portfolio, client inquiries, team profiles, and published content from one elegant dashboard.
+        {/* Center Content: Welcome Heading & Subtitle */}
+        <div className="relative z-10 my-auto py-12">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#C9A227] mb-3 block">
+            Portfolio Control Center
+          </span>
+          <h1 className="font-display text-4xl xl:text-5xl font-bold text-[#111827] leading-[1.15] tracking-tight mb-4">
+            Welcome Back
+          </h1>
+          <div className="w-12 h-0.5 bg-[#C9A227] mb-6" />
+          <p className="text-sm font-normal text-neutral-600 leading-relaxed max-w-md">
+            Access your spatial portfolio, manage client inquiries, team profiles, and published architectural works from a unified studio dashboard.
           </p>
         </div>
 
-        {/* Bottom brand stats */}
-        <div className="relative z-10 grid grid-cols-3 gap-6 border-t pt-8" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-          {[
-            { label: 'Projects', value: '200+' },
-            { label: 'Awards', value: '48' },
-            { label: 'Years', value: '12' },
-          ].map((stat) => (
-            <div key={stat.label}>
-              <p className="font-display text-2xl font-bold" style={{ color: '#D4AF37' }}>{stat.value}</p>
-              <p className="text-xs font-light mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Right Panel: Login Form ───────────────────────────────────────── */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-        <div className="w-full max-w-sm">
-
-          {/* Mobile brand header */}
-          <div className="lg:hidden flex items-center gap-3 mb-8">
-            <span
-              className="h-8 w-8 rounded flex items-center justify-center font-display font-bold text-sm"
-              style={{ background: '#0A2540', color: '#D4AF37' }}
+        {/* Bottom Decorative Line Art & Copyright */}
+        <div className="relative z-10 pt-6">
+          {/* Subtle Architectural Line Art SVG Graphic */}
+          <div className="mb-8 opacity-40 hover:opacity-70 transition-opacity pointer-events-none">
+            <svg 
+              width="100%" 
+              height="60" 
+              viewBox="0 0 400 60" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
             >
-              Da'
-            </span>
-            <span className="font-display font-bold text-lg tracking-widest uppercase" style={{ color: '#0A2540' }}>
-              ArchStudio
-            </span>
+              <line x1="0" y1="20" x2="400" y2="20" stroke="#111827" strokeWidth="0.75" strokeDasharray="4 4" />
+              <line x1="0" y1="40" x2="400" y2="40" stroke="#C9A227" strokeWidth="0.75" />
+              <rect x="40" y="10" width="80" height="40" stroke="#111827" strokeWidth="0.75" />
+              <rect x="150" y="5" width="120" height="45" stroke="#111827" strokeWidth="0.75" />
+              <circle cx="330" cy="25" r="15" stroke="#C9A227" strokeWidth="0.75" />
+              <line x1="210" y1="5" x2="210" y2="50" stroke="#C9A227" strokeWidth="0.5" strokeDasharray="2 2" />
+            </svg>
           </div>
 
-          <div className="mb-8">
-            <h2 className="font-display text-2xl font-bold mb-1" style={{ color: '#0A2540' }}>
-              {view === 'login' ? 'Admin Login' : view === 'forgot' ? 'Reset Access' : 'New Password'}
+          <p className="text-xs text-neutral-400 font-normal tracking-wide">
+            © {new Date().getFullYear()} Da' Corridor. All rights reserved.
+          </p>
+        </div>
+
+        {/* Background Grid Pattern (Very Subtle) */}
+        <div 
+          className="absolute inset-0 pointer-events-none opacity-[0.03]" 
+          style={{ 
+            backgroundImage: 'radial-gradient(#111827 1px, transparent 1px)', 
+            backgroundSize: '24px 24px' 
+          }} 
+        />
+      </div>
+
+      {/* ── Right Column: Centered Admin Login Card ──────────────────────────── */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 lg:p-16 bg-[#F8F7F4]">
+        <div className="w-full max-w-md bg-white rounded-2xl p-8 sm:p-10 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-neutral-200/80">
+          
+          {/* Mobile Header Logo */}
+          <div className="lg:hidden mb-8 flex justify-center">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded flex items-center justify-center font-display font-bold text-xs tracking-wider shrink-0 bg-[#111827] text-[#C9A227]"
+                style={{ background: 'transparent', color: '#D4AF37' }}>
+                <img src="/Da' Corridor.png" alt="Logo" className="h-full w-full object-contain" />
+              </div>
+              <span className="font-display font-bold text-lg tracking-widest uppercase text-[#111827]">
+                Da' Corridor.
+              </span>
+            </div>
+          </div>
+
+          {/* Form Header */}
+          <div className="mb-8 text-left">
+            <h2 className="font-display text-2xl font-bold text-[#111827] tracking-tight mb-1">
+              {view === 'login' ? 'Admin Access' : view === 'forgot' ? 'Reset Access' : 'New Password'}
             </h2>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-neutral-500 font-normal leading-relaxed">
               {view === 'login'
-                ? 'Enter your credentials to access the CMS'
+                ? 'Enter your credentials to manage studio operations.'
                 : view === 'forgot'
-                ? 'We\'ll generate a reset link in server logs'
-                : 'Paste the token from server logs and set a new password'}
+                ? 'Request a security reset link generated in system logs.'
+                : 'Enter your reset token to configure a new password.'}
             </p>
           </div>
 
-          {/* LOGIN FORM */}
+          {/* LOGIN VIEW */}
           {view === 'login' && (
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-5" noValidate>
+              
+              {/* Email Address */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#6B7280' }}>Email Address</label>
+                <label 
+                  htmlFor="admin-email" 
+                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 block"
+                >
+                  Email Address
+                </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
+                  <Mail className="absolute left-3.5 top-3 w-4 h-4 text-neutral-400 pointer-events-none" />
                   <input
+                    id="admin-email"
                     type="email"
-                    placeholder="admin@archstudio.com"
+                    placeholder="admin@dacorridor.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className={inputClass + " pl-10 pr-4"}
-                    style={{ borderColor: 'rgba(10,37,64,0.15)' }}
-                    onFocus={e => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.15)'; }}
-                    onBlur={e => { e.target.style.borderColor = 'rgba(10,37,64,0.15)'; e.target.style.boxShadow = 'none'; }}
+                    className="w-full bg-white border border-neutral-200 rounded-lg py-2.5 pl-10 pr-4 text-xs text-[#111827] placeholder-neutral-400 focus:outline-none focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227]/30 transition-all duration-150"
                   />
                 </div>
-                {errors.email && <p className="text-[10px] text-rose-500 mt-0.5">{errors.email}</p>}
+                {errors.email && <p className="text-[11px] text-rose-500 font-medium mt-1">{errors.email}</p>}
               </div>
 
+              {/* Password */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#6B7280' }}>Password</label>
+                  <label 
+                    htmlFor="admin-password" 
+                    className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 block"
+                  >
+                    Password
+                  </label>
                   <button
                     type="button"
                     onClick={() => setView('forgot')}
-                    className="text-[10px] font-semibold transition-colors"
-                    style={{ color: '#D4AF37' }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#B8941F'}
-                    onMouseLeave={e => e.currentTarget.style.color = '#D4AF37'}
+                    className="text-xs font-medium text-neutral-500 hover:text-[#C9A227] transition-colors focus:outline-none"
                   >
                     Forgot Password?
                   </button>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
+                  <Lock className="absolute left-3.5 top-3 w-4 h-4 text-neutral-400 pointer-events-none" />
                   <input
+                    id="admin-password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••••"
+                    placeholder="••••••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={inputClass + " pl-10 pr-10"}
-                    style={{ borderColor: 'rgba(10,37,64,0.15)' }}
-                    onFocus={e => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.15)'; }}
-                    onBlur={e => { e.target.style.borderColor = 'rgba(10,37,64,0.15)'; e.target.style.boxShadow = 'none'; }}
+                    className="w-full bg-white border border-neutral-200 rounded-lg py-2.5 pl-10 pr-10 text-xs text-[#111827] placeholder-neutral-400 focus:outline-none focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227]/30 transition-all duration-150"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
+                    className="absolute right-3.5 top-3 text-neutral-400 hover:text-neutral-600 transition-colors focus:outline-none"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                {errors.password && <p className="text-[11px] text-rose-500 font-medium mt-1">{errors.password}</p>}
               </div>
 
-              <div className="flex items-center justify-between text-[10px]">
+              {/* Remember Me */}
+              <div className="flex items-center justify-between pt-1">
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-3.5 h-3.5 rounded border-neutral-300 accent-[#D4AF37]"
+                    className="w-3.5 h-3.5 rounded border-neutral-300 accent-[#C9A227] cursor-pointer"
                   />
-                  <span style={{ color: '#6B7280' }}>Remember me</span>
+                  <span className="text-xs text-neutral-600 font-normal">Remember email</span>
                 </label>
               </div>
-              {errors.password && <p className="text-[10px] text-rose-500 -mt-2">{errors.password}</p>}
+
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-lg py-3 text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 mt-2"
-                style={{ background: '#0A2540', color: 'white' }}
-                onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = '#0d3060'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(10,37,64,0.25)'; }}}
-                onMouseLeave={e => { e.currentTarget.style.background = '#0A2540'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
+                className="w-full rounded-lg py-3 px-4 text-xs font-semibold uppercase tracking-wider text-white bg-[#111827] hover:bg-neutral-800 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 shadow-sm disabled:opacity-70 disabled:cursor-not-allowed mt-2"
               >
                 {loading ? (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                 ) : (
-                  <>Authenticate <ArrowRight className="w-4 h-4" /></>
+                  <>
+                    <span>Sign In to Dashboard</span>
+                    <ArrowRight className="w-4 h-4 text-[#C9A227]" />
+                  </>
                 )}
               </button>
             </form>
           )}
 
-          {/* FORGOT PASSWORD */}
+          {/* FORGOT PASSWORD VIEW */}
           {view === 'forgot' && (
-            <form onSubmit={handleForgot} className="space-y-4">
-              <p className="text-xs text-neutral-500 mb-4 leading-relaxed">
-                Enter your admin email. A password reset link will be generated and printed in the server logs.
-              </p>
+            <form onSubmit={handleForgot} className="space-y-4" noValidate>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#6B7280' }}>Admin Email</label>
+                <label 
+                  htmlFor="forgot-email" 
+                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 block"
+                >
+                  Admin Email
+                </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
+                  <Mail className="absolute left-3.5 top-3 w-4 h-4 text-neutral-400 pointer-events-none" />
                   <input
+                    id="forgot-email"
                     type="email"
-                    placeholder="admin@archstudio.com"
+                    placeholder="admin@dacorridor.com"
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
-                    className={inputClass + " pl-10 pr-4"}
-                    style={{ borderColor: 'rgba(10,37,64,0.15)' }}
-                    onFocus={e => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.15)'; }}
-                    onBlur={e => { e.target.style.borderColor = 'rgba(10,37,64,0.15)'; e.target.style.boxShadow = 'none'; }}
+                    className="w-full bg-white border border-neutral-200 rounded-lg py-2.5 pl-10 pr-4 text-xs text-[#111827] placeholder-neutral-400 focus:outline-none focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227]/30 transition-all"
                   />
                 </div>
-                {errors.email && <p className="text-[10px] text-rose-500 mt-0.5">{errors.email}</p>}
               </div>
-              <div className="flex gap-2">
+
+              <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setView('login')}
-                  className="w-1/2 border rounded-lg py-2.5 text-xs font-semibold hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-                  style={{ borderColor: 'rgba(10,37,64,0.15)' }}
+                  className="w-1/2 border border-neutral-200 rounded-lg py-2.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
                 >
                   Back to Login
                 </button>
                 <button
                   type="submit"
                   disabled={forgotLoading}
-                  className="w-1/2 rounded-lg py-2.5 text-xs font-semibold transition-all"
-                  style={{ background: '#0A2540', color: 'white' }}
+                  className="w-1/2 rounded-lg py-2.5 text-xs font-semibold text-white bg-[#111827] hover:bg-neutral-800 transition-colors disabled:opacity-70"
                 >
-                  {forgotLoading ? 'Processing...' : 'Send Reset Link'}
+                  {forgotLoading ? 'Generating...' : 'Send Link'}
                 </button>
               </div>
             </form>
           )}
 
-          {/* RESET PASSWORD */}
+          {/* RESET PASSWORD VIEW */}
           {view === 'reset' && (
-            <form onSubmit={handleReset} className="space-y-4">
-              <p className="text-xs text-neutral-500 mb-4 leading-relaxed">
-                A reset code was generated. Paste the JWT token from server logs and set your new password.
-              </p>
-
+            <form onSubmit={handleReset} className="space-y-4" noValidate>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#6B7280' }}>Reset Token</label>
+                <label 
+                  htmlFor="reset-token" 
+                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 block"
+                >
+                  Reset Token
+                </label>
                 <div className="relative">
-                  <ShieldCheck className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
+                  <ShieldCheck className="absolute left-3.5 top-3 w-4 h-4 text-neutral-400 pointer-events-none" />
                   <input
+                    id="reset-token"
                     type="text"
-                    placeholder="Paste token here"
+                    placeholder="Paste JWT token from server logs"
                     value={resetToken}
                     onChange={(e) => setResetToken(e.target.value)}
-                    className={inputClass + " pl-10 pr-4"}
-                    style={{ borderColor: 'rgba(10,37,64,0.15)' }}
-                    onFocus={e => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.15)'; }}
-                    onBlur={e => { e.target.style.borderColor = 'rgba(10,37,64,0.15)'; e.target.style.boxShadow = 'none'; }}
+                    className="w-full bg-white border border-neutral-200 rounded-lg py-2.5 pl-10 pr-4 text-xs text-[#111827] placeholder-neutral-400 focus:outline-none focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227]/30 transition-all"
                   />
                 </div>
-                {errors.email && <p className="text-[10px] text-rose-500 mt-0.5">{errors.email}</p>}
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#6B7280' }}>New Password</label>
+                <label 
+                  htmlFor="new-password" 
+                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 block"
+                >
+                  New Password
+                </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
+                  <Lock className="absolute left-3.5 top-3 w-4 h-4 text-neutral-400 pointer-events-none" />
                   <input
+                    id="new-password"
                     type="password"
                     placeholder="New password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className={inputClass + " pl-10 pr-4"}
-                    style={{ borderColor: 'rgba(10,37,64,0.15)' }}
-                    onFocus={e => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.15)'; }}
-                    onBlur={e => { e.target.style.borderColor = 'rgba(10,37,64,0.15)'; e.target.style.boxShadow = 'none'; }}
+                    className="w-full bg-white border border-neutral-200 rounded-lg py-2.5 pl-10 pr-4 text-xs text-[#111827] placeholder-neutral-400 focus:outline-none focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227]/30 transition-all"
                   />
                 </div>
-                {errors.email && <p className="text-[10px] text-rose-500 mt-0.5">{errors.email}</p>}
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setView('login')}
-                  className="w-1/2 border rounded-lg py-2.5 text-xs font-semibold hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-                  style={{ borderColor: 'rgba(10,37,64,0.15)' }}
+                  className="w-1/2 border border-neutral-200 rounded-lg py-2.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
                 >
                   Back to Login
                 </button>
                 <button
                   type="submit"
                   disabled={resetLoading}
-                  className="w-1/2 rounded-lg py-2.5 text-xs font-semibold transition-all"
-                  style={{ background: '#0A2540', color: 'white' }}
+                  className="w-1/2 rounded-lg py-2.5 text-xs font-semibold text-white bg-[#111827] hover:bg-neutral-800 transition-colors disabled:opacity-70"
                 >
                   {resetLoading ? 'Resetting...' : 'Change Password'}
                 </button>
@@ -384,9 +405,12 @@ const Login = () => {
             </form>
           )}
 
-          <p className="text-[10px] text-center text-neutral-400 mt-8">
-            &copy; {new Date().getFullYear()} ArchStudio. Secure admin access only.
-          </p>
+          {/* Card Footer Security Notice */}
+          <div className="mt-8 pt-5 border-t border-neutral-100 flex items-center justify-center gap-1.5 text-[11px] text-neutral-400 font-medium">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#C9A227]" />
+            <span>Protected Area · Authorized Personnel Only</span>
+          </div>
+
         </div>
       </div>
     </div>

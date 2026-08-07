@@ -1,4 +1,4 @@
-﻿const prisma = require('../utils/db');
+const prisma = require('../utils/db');
 
 const getSystemSettings = async (req, res) => {
   try {
@@ -12,7 +12,7 @@ const getSystemSettings = async (req, res) => {
           websiteLogo: "/uploads/logo.png",
           favicon: "/favicon.ico",
           themeColors: "default",
-          footerText: "Â© 2026 ArchStudio. All rights reserved.",
+          footerText: "© 2026 Da' Corridor. All rights reserved.",
           maintenanceMode: false,
           timezone: "UTC",
           language: "en"
@@ -33,21 +33,24 @@ const updateSystemSettings = async (req, res) => {
     maintenanceMode, timezone, language
   } = req.body;
 
+  if (!footerText || !footerText.trim()) {
+    return res.status(400).json({ message: 'Footer Text is a required field.' });
+  }
+
   try {
     const existing = await prisma.systemSettings.findFirst({
       where: { deletedAt: null }
     });
 
-    // Validate websiteLogo and favicon URLs
-    if (websiteLogo) {
-    }
-    if (favicon) {
-    }
     let updated;
     const data = {
-      websiteLogo, favicon, themeColors, footerText,
+      websiteLogo: websiteLogo ? websiteLogo.trim() : null,
+      favicon: favicon ? favicon.trim() : null,
+      themeColors: themeColors ? themeColors.trim() : 'default',
+      footerText: footerText.trim(),
       maintenanceMode: maintenanceMode !== undefined ? Boolean(maintenanceMode) : undefined,
-      timezone, language
+      timezone: timezone ? timezone.trim() : 'UTC',
+      language: language ? language.trim() : 'en'
     };
 
     if (existing) {
@@ -63,7 +66,7 @@ const updateSystemSettings = async (req, res) => {
       data: {
         action: 'UPDATE_SYSTEM_SETTINGS',
         details: 'Updated global site settings and theme preferences',
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 

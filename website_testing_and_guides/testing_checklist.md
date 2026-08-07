@@ -65,7 +65,7 @@ This checklist provides a detailed roadmap for QA and developers to test all fea
 - [ ] **Unauthorized Access Guard:** Attempt to access `/admin/dashboard` or `/admin/settings` directly without logging in. Verify that you are redirected to `/admin/login`.
 - [ ] **Login Validation:**
   - Submit invalid email or password and check for errors.
-  - Submit default seed credentials (`admin@archstudio.com` / `admin123`) and verify redirect to the dashboard.
+  - Submit default seed credentials (`admin@dacorridor.com` / `admin123`) and verify redirect to the dashboard.
 - [ ] **Logout Function:** Click the "Sign Out" button and verify that auth tokens are cleared and you are redirected to the login screen.
 
 ### 2.2 Dashboard

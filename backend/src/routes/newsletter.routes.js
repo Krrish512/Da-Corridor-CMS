@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/auth.middleware');
+const { publicFormLimiter } = require('../middleware/rateLimiter');
 const {
   getSubscribers,
   subscribe,
@@ -8,8 +9,8 @@ const {
   exportSubscribersCSV,
 } = require('../controllers/newsletter.controller');
 
-// Public Subscription
-router.post('/subscribe', subscribe);
+// Public Subscription — rate-limited to prevent spam
+router.post('/subscribe', publicFormLimiter, subscribe);
 
 // Protected Operations
 router.get('/export', protect, exportSubscribersCSV);

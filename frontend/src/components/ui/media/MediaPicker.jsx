@@ -9,6 +9,9 @@ const MediaPicker = ({
   onChange,
   multiple = false,
   outputFormat,
+  maxSizeMB = 10,
+  allowedFormats = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+  acceptedFormatsText,
 }) => {
   if (!outputFormat) {
     throw new Error(
@@ -30,22 +33,52 @@ const MediaPicker = ({
   const [error, setError] = useState('');
   const [uploadingFiles, setUploadingFiles] = useState([]);
 
+  // Build comprehensive file filter string for HTML input accept attribute
+  const acceptString = allowedFormats
+    .flatMap(fmt => {
+      if (fmt.includes('jpeg') || fmt.includes('jpg')) {
+        return ['image/jpeg', 'image/jpg', 'image/pjpeg', '.jpg', '.jpeg'];
+      }
+      if (fmt.includes('png')) return ['image/png', '.png'];
+      if (fmt.includes('webp')) return ['image/webp', '.webp'];
+      if (fmt.includes('gif')) return ['image/gif', '.gif'];
+      return [fmt];
+    })
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .join(',');
+
   // File validation helper
   const validateFile = (file) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    const maxSize = 10 * 1024 * 1024; // 10 MB
+    const maxSize = maxSizeMB * 1024 * 1024;
+    const fileExt = file.name.split('.').pop().toLowerCase();
+    const mime = (file.type || '').toLowerCase();
+    
+    // Check mime type match or extension match
+    const isMimeMatch = allowedFormats.some(fmt => fmt.toLowerCase() === mime) ||
+      ((mime === 'image/jpg' || mime === 'image/pjpeg') && allowedFormats.some(f => f.includes('jpeg') || f.includes('jpg')));
 
-    if (!allowedTypes.includes(file.type)) {
+    const isExtMatch = allowedFormats.some(fmt => {
+      const f = fmt.toLowerCase();
+      if (fileExt === 'jpg' || fileExt === 'jpeg') {
+        return f.includes('jpeg') || f.includes('jpg');
+      }
+      return f.includes(fileExt);
+    });
+
+    if (!isMimeMatch && !isExtMatch) {
+      const displayFormats = allowedFormats
+        .map(f => f.replace('image/', '').toUpperCase())
+        .join(', ');
       return {
         isValid: false,
-        reason: `Only JPG, JPEG, PNG, WEBP, and GIF images are allowed. Rejected: "${file.name}"`,
+        reason: `Only ${displayFormats} images are allowed. Rejected: "${file.name}"`,
       };
     }
 
     if (file.size > maxSize) {
       return {
         isValid: false,
-        reason: `File size exceeds the 10MB limit. Rejected: "${file.name}" (Size: ${(file.size / (1024 * 1024)).toFixed(2)}MB)`,
+        reason: `File size exceeds the ${maxSizeMB}MB limit. Rejected: "${file.name}" (Size: ${(file.size / (1024 * 1024)).toFixed(2)}MB)`,
       };
     }
 
@@ -224,7 +257,7 @@ const MediaPicker = ({
         ref={fileInputRef}
         type="file"
         multiple={multiple}
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept={acceptString}
         onChange={handleInputChange}
         className="hidden"
       />
@@ -237,6 +270,9 @@ const MediaPicker = ({
           uploadProgress={uploadProgress}
           error={error}
           multiple={multiple}
+          accept={acceptString}
+          acceptedFormatsText={acceptedFormatsText}
+          maxSizeMB={maxSizeMB}
         />
       ) : null}
 

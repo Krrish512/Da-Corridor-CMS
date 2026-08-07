@@ -7,11 +7,11 @@ const api = axios.create({
   },
 });
 
-// Request interceptor: inject token
+// Request interceptor: inject token from localStorage or sessionStorage
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('arch_token');
-    if (token) {
+    const token = localStorage.getItem('arch_token') || sessionStorage.getItem('arch_token');
+    if (token && token !== 'null' && token !== 'undefined') {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -21,18 +21,19 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor: handle token expiration
+// Response interceptor: handle token expiration & 401 Unauthorized
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      console.warn('[API] Token expired or unauthorized. Logging out...');
+      console.warn('[API] Token expired or unauthorized. Clearing session...');
       localStorage.removeItem('arch_token');
       localStorage.removeItem('arch_user');
-      // Redirect to login if on admin page and not already on login page
-      if (window.location.pathname.startsWith('/admin') && !window.location.pathname.includes('/login')) {
-        window.location.href = '/login?expired=true';
-      }
+      sessionStorage.removeItem('arch_token');
+      sessionStorage.removeItem('arch_user');
+      
+      // Dispatch custom event so AuthContext handles logout cleanly without hard page reloads
+      window.dispatchEvent(new CustomEvent('auth:unauthorized'));
     }
     return Promise.reject(error);
   }

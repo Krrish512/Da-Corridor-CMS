@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   MessageSquare, Mail, Download, Trash2, CheckCircle, Search, Eye, X,
@@ -8,12 +9,25 @@ import {
 import { useToast } from '../context/ToastContext';
 import api from '../utils/api';
 
+// Derive which tab to show from the current URL path
+const getTabFromPath = (pathname) => {
+  const segment = pathname.split('/').pop();
+  return segment === 'newsletter' ? 'newsletter' : 'messages';
+};
+
 const Inquiries = () => {
   const queryClient = useQueryClient();
   const { addToast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Tab views: 'messages' | 'newsletter'
-  const [activeTab, setActiveTab] = useState('messages');
+  const [activeTab, setActiveTab] = useState(() => getTabFromPath(location.pathname));
+
+  // Sync tab when navigating between these routes
+  useEffect(() => {
+    setActiveTab(getTabFromPath(location.pathname));
+  }, [location.pathname]);
 
   // Messages States
   const [msgSearch, setMsgSearch] = useState('');
@@ -135,7 +149,7 @@ const Inquiries = () => {
       {/* Tabs */}
       <div className="flex border-b border-neutral-200 dark:border-neutral-850 gap-6 text-xs font-bold uppercase tracking-wider pb-px">
         <button
-          onClick={() => setActiveTab('messages')}
+          onClick={() => navigate('/admin/messages')}
           className={`flex items-center gap-2 pb-3 border-b-2 -mb-px transition-all ${
             activeTab === 'messages'
               ? 'border-neutral-900 text-neutral-900 dark:border-neutral-100 dark:text-neutral-100'
@@ -146,7 +160,7 @@ const Inquiries = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('newsletter')}
+          onClick={() => navigate('/admin/newsletter')}
           className={`flex items-center gap-2 pb-3 border-b-2 -mb-px transition-all ${
             activeTab === 'newsletter'
               ? 'border-neutral-900 text-neutral-900 dark:border-neutral-100 dark:text-neutral-100'

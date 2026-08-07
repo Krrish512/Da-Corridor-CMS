@@ -6,7 +6,7 @@ This guide provides clear, step-by-step instructions on how to modify the site's
 ## 1. Modifying the Website Logo
 
 ### Method A: Direct Code Modification (Quickest)
-The logo mark (`A` icon) and text branding (`ARCHSTUDIO`) are currently hardcoded in the frontend navbar layout.
+The logo mark (`A` icon) and text branding (`DA' CORRIDOR`) are currently hardcoded in the frontend navbar layout.
 1. Open [ClientLayout.jsx](file:///d:/Da’ Corridor/frontend/src/pages/client/ClientLayout.jsx).
 2. Go to lines **75 to 82**:
    ```jsx
@@ -15,7 +15,7 @@ The logo mark (`A` icon) and text branding (`ARCHSTUDIO`) are currently hardcode
        <span className="text-white dark:text-black font-extrabold text-lg tracking-widest font-display">A</span>
      </div>
      <span className="text-xl font-bold tracking-wider font-display bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400 bg-clip-text text-transparent">
-       ARCHSTUDIO
+       DA' CORRIDOR
      </span>
    </Link>
    ```
@@ -42,10 +42,10 @@ The logo mark (`A` icon) and text branding (`ARCHSTUDIO`) are currently hardcode
 ## 2. Modifying the Website Name & Titles
 
 ### 2.1 Main Branding Name (Header & Footer)
-The name `ARCHSTUDIO` is rendered in two primary frontend components:
+The name `DA' CORRIDOR` is rendered in two primary frontend components:
 - **Navbar Header:** [ClientLayout.jsx](file:///d:/Da’ Corridor/frontend/src/pages/client/ClientLayout.jsx) around line 80:
   ```jsx
-  <span className="text-xl font-bold ...">ARCHSTUDIO</span>
+  <span className="text-xl font-bold ...">DA' CORRIDOR</span>
   ```
 - **Footer Text:** Rendered dynamically based on your **Footer Copyright Text** settings in the CMS Settings tab.
 
@@ -55,16 +55,16 @@ The browser tab text is updated dynamically using a routing map in React.
 2. Find the `titleMap` variable around lines **29 to 37**:
    ```javascript
    const titleMap = {
-     '/': 'ArchStudio | Architecture & Spatial Design',
-     '/about': 'About Us | ArchStudio',
-     '/services': 'Our Services | ArchStudio',
-     '/portfolio': 'Portfolio | ArchStudio',
-     '/comments': 'Client Testimonials | ArchStudio',
-     '/contact': 'Contact Us | ArchStudio',
-     '/blog': 'Blog & FAQ | ArchStudio',
+     '/': 'Da\' Corridor | Architecture & Spatial Design',
+     '/about': 'About Us | Da\' Corridor',
+     '/services': 'Our Services | Da\' Corridor',
+     '/portfolio': 'Portfolio | Da\' Corridor',
+     '/comments': 'Client Testimonials | Da\' Corridor',
+     '/contact': 'Contact Us | Da\' Corridor',
+     '/blog': 'Blog & FAQ | Da\' Corridor',
    };
    ```
-3. Replace `'ArchStudio'` with your desired brand name for each page route.
+3. Replace `'Da\' Corridor'` with your desired brand name for each page route.
 
 ### 2.3 Search Engine Browser Title (SEO Meta Tags)
 1. Navigate to the Admin Portal -> **System Configuration** -> **SEO Configurations** tab.

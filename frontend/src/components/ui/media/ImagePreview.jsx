@@ -19,26 +19,26 @@ const ImagePreview = ({
     if (!imageUrl) return null;
 
     return (
-      <div className="relative group w-full aspect-video rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center">
+      <div className="relative group w-full max-w-xs sm:max-w-sm aspect-[4/3] rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex items-center justify-center shadow-sm">
         <img
           src={imageUrl}
           alt="Preview"
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-102"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         
         {/* Glassmorphic Hover Overlay */}
-        <div className="absolute inset-0 bg-neutral-950/40 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+        <div className="absolute inset-0 bg-neutral-950/50 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2.5">
           <button
             type="button"
             onClick={onReplace}
-            className="px-3 py-1.5 bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white rounded-md text-xs font-bold shadow hover:bg-neutral-100 dark:hover:bg-neutral-800 transition flex items-center gap-1.5"
+            className="px-3 py-1.5 bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white rounded-md text-xs font-bold shadow hover:bg-neutral-100 dark:hover:bg-neutral-800 transition flex items-center gap-1.5 cursor-pointer"
           >
             <Upload className="w-3.5 h-3.5" /> Replace
           </button>
           <button
             type="button"
             onClick={onRemove}
-            className="px-3 py-1.5 bg-rose-600 text-white rounded-md text-xs font-bold shadow hover:bg-rose-700 transition flex items-center gap-1.5"
+            className="px-3 py-1.5 bg-rose-600 text-white rounded-md text-xs font-bold shadow hover:bg-rose-700 transition flex items-center gap-1.5 cursor-pointer"
           >
             <Trash2 className="w-3.5 h-3.5" /> Remove
           </button>

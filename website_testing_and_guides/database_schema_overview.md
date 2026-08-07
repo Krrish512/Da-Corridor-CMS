@@ -398,7 +398,7 @@ Below is the exhaustive inventory of all 21 tables in the schema, including thei
 
 #### 20. `SEOSettings`
 * **Purpose**: General homepage search optimization meta values, scripts, and analytical tracking IDs.
-* **Total Columns**: 11
+* **Total Columns**: 9
 
 | Column Name | Prisma Type | PostgreSQL Type | Key Type | Nullability | Default / Extra |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -409,8 +409,6 @@ Below is the exhaustive inventory of all 21 tables in the schema, including thei
 | `ogImage` | `String?`| `VARCHAR` / `TEXT` | — | **NULLABLE** | OpenGraph image |
 | `googleAnalyticsId`| `String?`| `VARCHAR` / `TEXT` | — | **NULLABLE** | Analytics Tag ID |
 | `searchConsoleVerification`| `String?`| `VARCHAR` / `TEXT` | — | **NULLABLE** | Verification meta tag |
-| `robotsText` | `String?`| `VARCHAR` / `TEXT` | — | **NULLABLE** | Custom robots rules overrides |
-| `sitemapXml` | `String?`| `VARCHAR` / `TEXT` | — | **NULLABLE** | Location link |
 | `createdAt` | `DateTime` | `TIMESTAMP` | — | NOT NULL | `now()` |
 | `updatedAt` | `DateTime` | `TIMESTAMP` | — | NOT NULL | `updatedAt` |
 | `deletedAt` | `DateTime?` | `TIMESTAMP` | — | **NULLABLE** | Soft delete |

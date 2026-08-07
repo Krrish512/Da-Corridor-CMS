@@ -1,10 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ─── ArchStudio Design Token System ─────────────────────────────────────── */
+/* ─── Da' Corridor Design Token System ─────────────────────────────────────── */
 @layer base {
   :root {
     /* Semantic base tokens (HSL for Tailwind compat) */
@@ -21,7 +19,7 @@
     --border: 212 67% 15% / 0.12;
     --radius: 0.375rem;
 
-    /* ArchStudio Brand Colors */
+    /* Da' Corridor Brand Colors */
     --arch-primary: #0A2540;
     --arch-gold: #D4AF37;
     --arch-gold-dark: #B8941F;
@@ -68,9 +66,6 @@
 @layer base {
   * {
     @apply border-border;
-    transition-property: color, background-color, border-color, box-shadow, transform;
-    transition-duration: 200ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
   body {
     @apply bg-background text-foreground;
@@ -220,6 +215,22 @@
 .animate-fade-in   { animation: fade-in  0.3s ease-out forwards; }
 .animate-scale-in  { animation: scale-in 0.2s ease-out forwards; }
 
+/* ─── Public page transition ──────────────────────────────────────────────── */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter {
+  animation: page-enter .25s ease-out both;
+  will-change:opacity,transform;
+}
+/* Respect user's motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .page-enter {
+    animation: none;
+  }
+}
+
 /* ─── Gold accent line for section headers ───────────────────────────────── */
 .gold-line::after {
   content: '';
@@ -291,6 +302,6 @@
 
   .dark input::placeholder,
   .dark textarea::placeholder {
-    color: rgba(255, 255, 255, 0.4) !important;
+    color: rgba(255, 255, 255, 0.65) !important;
   }
 }

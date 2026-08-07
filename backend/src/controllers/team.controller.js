@@ -1,4 +1,4 @@
-﻿const prisma = require('../utils/db');
+const prisma = require('../utils/db');
 
 const getTeamMembers = async (req, res) => {
   try {
@@ -15,19 +15,30 @@ const getTeamMembers = async (req, res) => {
 
 const createTeamMember = async (req, res) => {
   const { name, position, photo, bio, facebook, twitter, linkedin, instagram } = req.body;
+
+  if (!name || !name.trim() || !position || !position.trim() || !bio || !bio.trim()) {
+    return res.status(400).json({ message: 'Name, Position, and Bio are required fields.' });
+  }
+
   try {
-    // Validate photo URL
-    if (photo) {
-    }
     const member = await prisma.teamMember.create({
-      data: { name, position, photo, bio, facebook, twitter, linkedin, instagram }
+      data: {
+        name: name.trim(),
+        position: position.trim(),
+        photo: photo ? photo.trim() : null,
+        bio: bio.trim(),
+        facebook: facebook ? facebook.trim() : null,
+        twitter: twitter ? twitter.trim() : null,
+        linkedin: linkedin ? linkedin.trim() : null,
+        instagram: instagram ? instagram.trim() : null,
+      }
     });
 
     await prisma.activityLog.create({
       data: {
         action: 'CREATE_TEAM',
         details: `Added team member: ${name} (${position})`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 
@@ -41,20 +52,39 @@ const createTeamMember = async (req, res) => {
 const updateTeamMember = async (req, res) => {
   const { id } = req.params;
   const { name, position, photo, bio, facebook, twitter, linkedin, instagram } = req.body;
+
+  if (!name || !name.trim() || !position || !position.trim() || !bio || !bio.trim()) {
+    return res.status(400).json({ message: 'Name, Position, and Bio are required fields.' });
+  }
+
   try {
-    // Validate photo URL
-    if (photo) {
+    const existing = await prisma.teamMember.findFirst({
+      where: { id, deletedAt: null }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: 'Team member not found.' });
     }
+
     const member = await prisma.teamMember.update({
       where: { id },
-      data: { name, position, photo, bio, facebook, twitter, linkedin, instagram }
+      data: {
+        name: name.trim(),
+        position: position.trim(),
+        photo: photo ? photo.trim() : null,
+        bio: bio.trim(),
+        facebook: facebook ? facebook.trim() : null,
+        twitter: twitter ? twitter.trim() : null,
+        linkedin: linkedin ? linkedin.trim() : null,
+        instagram: instagram ? instagram.trim() : null,
+      }
     });
 
     await prisma.activityLog.create({
       data: {
         action: 'UPDATE_TEAM',
         details: `Updated team member: ${name}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 
@@ -68,6 +98,14 @@ const updateTeamMember = async (req, res) => {
 const deleteTeamMember = async (req, res) => {
   const { id } = req.params;
   try {
+    const existing = await prisma.teamMember.findFirst({
+      where: { id, deletedAt: null }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: 'Team member not found.' });
+    }
+
     const member = await prisma.teamMember.update({
       where: { id },
       data: { deletedAt: new Date() }
@@ -77,7 +115,7 @@ const deleteTeamMember = async (req, res) => {
       data: {
         action: 'DELETE_TEAM',
         details: `Soft-deleted team member: ${member.name}`,
-        userEmail: req.user?.email || 'admin@archstudio.com'
+        userEmail: req.user?.email || 'admin@dacorridor.com'
       }
     });
 

@@ -17,6 +17,10 @@ const contactRoutes = require('./contact.routes');
 const newsletterRoutes = require('./newsletter.routes');
 const seoRoutes = require('./seo.routes');
 const settingsRoutes = require('./settings.routes');
+const userRoutes = require('./user.routes');
+const healthRoutes = require('./health.routes');
+const backupRoutes = require('./backup.routes');
+const notificationRoutes = require('./notification.routes');
 
 // Bind routers to API routes
 router.use('/auth', authRoutes);
@@ -34,5 +38,9 @@ router.use('/contact', contactRoutes);
 router.use('/newsletter', newsletterRoutes);
 router.use('/seo', seoRoutes);
 router.use('/settings', settingsRoutes);
+router.use('/users', userRoutes);
+router.use('/health', healthRoutes);
+router.use('/backups', backupRoutes);
+router.use('/notifications', notificationRoutes);
 
 module.exports = router;

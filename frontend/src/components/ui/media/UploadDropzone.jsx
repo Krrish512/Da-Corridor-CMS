@@ -8,6 +8,9 @@ const UploadDropzone = ({
   uploadProgress,
   error,
   multiple = false,
+  accept = "image/jpeg,image/png,image/webp,image/gif",
+  acceptedFormatsText,
+  maxSizeMB = 10,
 }) => {
   const [isDragActive, setIsDragActive] = useState(false);
   const fileInputRef = useRef(null);
@@ -39,10 +42,12 @@ const UploadDropzone = ({
   const handleChange = (e) => {
     e.preventDefault();
     if (e.target.files && e.target.files.length > 0) {
+      const filesArray = Array.from(e.target.files);
+      e.target.value = '';
       if (multiple) {
-        onFileSelect(Array.from(e.target.files));
+        onFileSelect(filesArray);
       } else {
-        onFileSelect([e.target.files[0]]);
+        onFileSelect([filesArray[0]]);
       }
     }
   };
@@ -60,10 +65,10 @@ const UploadDropzone = ({
       onDragLeave={handleDrag}
       onDrop={handleDrop}
       onClick={isUploading ? undefined : onButtonClick}
-      className={`relative flex flex-col items-center justify-center w-full min-h-[160px] p-6 border-2 border-dashed rounded-lg transition-all duration-300 cursor-pointer text-center select-none
+      className={`group relative flex flex-col items-center justify-center w-full min-h-[130px] p-5 border-2 border-dashed rounded-lg transition-all duration-200 cursor-pointer text-center select-none
         ${isDragActive
-          ? 'border-accent bg-accent/5 dark:bg-accent/10 scale-[1.01]'
-          : 'border-neutral-300 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/30'
+          ? 'border-[#D4AF37] bg-[#D4AF37]/10 dark:bg-[#D4AF37]/15 scale-[1.005]'
+          : 'border-neutral-200 dark:border-neutral-700/60 hover:border-[#D4AF37]/60 dark:hover:border-[#D4AF37]/60 bg-neutral-50/70 dark:bg-neutral-900/40 hover:bg-neutral-100/50 dark:hover:bg-neutral-900/60'
         }
         ${isUploading ? 'pointer-events-none opacity-85' : ''}
       `}
@@ -72,7 +77,7 @@ const UploadDropzone = ({
         ref={fileInputRef}
         type="file"
         multiple={multiple}
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept={accept}
         onChange={handleChange}
         className="hidden"
       />
@@ -80,7 +85,7 @@ const UploadDropzone = ({
       {isUploading ? (
         <div className="flex flex-col items-center justify-center space-y-3 w-full">
           <div className="relative flex items-center justify-center">
-            <RefreshCw className="w-8 h-8 text-accent animate-spin" />
+            <RefreshCw className="w-6 h-6 text-[#D4AF37] animate-spin" />
           </div>
           <div className="w-full max-w-xs space-y-1">
             <div className="flex justify-between text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
@@ -89,23 +94,26 @@ const UploadDropzone = ({
             </div>
             <div className="w-full bg-neutral-200 dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
               <div
-                className="bg-accent h-full rounded-full transition-all duration-300 ease-out"
+                className="bg-[#D4AF37] h-full rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center space-y-2">
-          <div className="p-3 rounded-full bg-neutral-100 dark:bg-neutral-850 text-neutral-500 dark:text-neutral-400">
-            <UploadCloud className="w-6 h-6" />
+        <div className="flex flex-col items-center justify-center space-y-1.5">
+          <div className="p-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-400 group-hover:text-[#D4AF37] group-hover:bg-[#D4AF37]/10 transition-colors">
+            <UploadCloud className="w-5 h-5" />
           </div>
-          <div className="space-y-1">
-            <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-              Drag & drop image here, or <span className="text-accent hover:underline">browse</span>
+          <div className="space-y-0.5">
+            <p className="text-xs font-medium text-neutral-700 dark:text-neutral-200">
+              Drag & Drop an image here
             </p>
-            <p className="text-[10px] text-neutral-400 font-medium">
-              Supports JPG, JPEG, PNG, WEBP, GIF up to 10MB
+            <p className="text-[11px] text-neutral-400 font-normal">
+              or <span className="text-[#D4AF37] font-semibold hover:underline">click to browse</span>
+            </p>
+            <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-normal pt-1">
+              {acceptedFormatsText || `Supports JPG, JPEG, PNG, WEBP, GIF up to ${maxSizeMB}MB`}
             </p>
           </div>
         </div>

@@ -1,37 +1,23 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  Compass, Layers, CheckSquare, Leaf, Hexagon, Shield, Award, Users, Briefcase, FileText, HelpCircle 
-} from 'lucide-react';
-
 import api from '../../utils/api';
-
-const iconMap = {
-  Compass: Compass,
-  Layers: Layers,
-  CheckSquare: CheckSquare,
-  Leaf: Leaf,
-  Hexagon: Hexagon,
-  Shield: Shield,
-  Award: Award,
-  Users: Users,
-  Briefcase: Briefcase,
-  FileText: FileText
-};
-
-const DynamicIcon = ({ name, className, size = 24 }) => {
-  const IconComponent = iconMap[name] || HelpCircle;
-  return <IconComponent className={className} size={size} />;
-};
+import DynamicIcon from '../../components/ui/DynamicIcon';
+import SEO from '../../components/common/SEO';
 
 const Services = () => {
   const { data: services, isLoading } = useQuery({
     queryKey: ['publicServicesPage'],
     queryFn: () => api.get('/services').then(res => res.data || []),
+    staleTime: 1000 * 60 * 10,
   });
 
   return (
     <div className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <SEO
+        title="Architecture & Consulting Services"
+        description="Explore our architecture, urban master planning, luxury interior design, and sustainable building consulting services."
+        path="/services"
+      />
       {/* HEADER */}
       <div className="text-center max-w-3xl mx-auto mb-20">
         <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>
@@ -48,7 +34,7 @@ const Services = () => {
 
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-\[#0A2540\]" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-[#0A2540]" />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -72,6 +58,8 @@ const Services = () => {
                     <img 
                       src={service.image} 
                       alt={service.title} 
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-500"
                     />
                   </div>
