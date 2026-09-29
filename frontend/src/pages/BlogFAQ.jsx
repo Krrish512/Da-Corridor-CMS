@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -68,6 +69,19 @@ const BlogFAQ = () => {
   const [faqModalOpen, setFaqModalOpen] = useState(false);
   const [editingFaq, setEditingFaq] = useState(null);
   const [faqForm, setFaqForm] = useState({ question: '', answer: '', displayOrder: 0 });
+
+  // Escape key handler for FAQ modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && faqModalOpen) {
+        setFaqModalOpen(false);
+      }
+    };
+    if (faqModalOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [faqModalOpen]);
 
   // ----------------------------------------------------
   // QUERIES
@@ -648,11 +662,25 @@ const BlogFAQ = () => {
 
       {/* FAQ MODAL */}
       {faqModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 backdrop-blur-xs">
-          <form onSubmit={handleFaqSubmit} className="bg-white dark:bg-neutral-900 border rounded-lg p-6 w-full max-w-sm space-y-4 shadow-premium-lg animate-slide-in">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 backdrop-blur-xs p-4 animate-fade-in"
+          onClick={() => setFaqModalOpen(false)}
+        >
+          <form 
+            onSubmit={handleFaqSubmit}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-6 w-full max-w-sm space-y-4 shadow-premium-lg animate-scale-in"
+          >
             <div className="flex items-center justify-between pb-2 border-b">
               <h3 className="text-xs font-bold uppercase tracking-wider">{editingFaq ? 'Edit FAQ Card' : 'New FAQ Card'}</h3>
-              <button type="button" onClick={() => setFaqModalOpen(false)} className="text-neutral-400 hover:text-neutral-600"><X className="w-4 h-4" /></button>
+              <button 
+                type="button" 
+                onClick={() => setFaqModalOpen(false)} 
+                className="text-neutral-400 hover:text-neutral-600 p-1 rounded focus-ring"
+                aria-label="Close dialog"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             <div className="grid grid-cols-3 gap-2">
@@ -664,7 +692,7 @@ const BlogFAQ = () => {
                   value={faqForm.question}
                   onChange={(e) => setFaqForm({ ...faqForm, question: e.target.value })}
                   placeholder="Is landscaping included?"
-                  className="w-full bg-neutral-50 border rounded py-1.5 px-2.5 text-xs"
+                  className="w-full bg-neutral-50 border rounded py-1.5 px-2.5 text-xs focus-ring"
                 />
               </div>
               <div className="space-y-1">
@@ -673,7 +701,7 @@ const BlogFAQ = () => {
                   type="number"
                   value={faqForm.displayOrder}
                   onChange={(e) => setFaqForm({ ...faqForm, displayOrder: parseInt(e.target.value) || 0 })}
-                  className="w-full bg-neutral-50 border rounded py-1.5 px-2 text-xs"
+                  className="w-full bg-neutral-50 border rounded py-1.5 px-2 text-xs focus-ring"
                 />
               </div>
             </div>
@@ -686,13 +714,24 @@ const BlogFAQ = () => {
                 value={faqForm.answer}
                 onChange={(e) => setFaqForm({ ...faqForm, answer: e.target.value })}
                 placeholder="Write the FAQ answer..."
-                className="w-full bg-neutral-50 border rounded py-1.5 px-2.5 text-xs resize-none"
+                className="w-full bg-neutral-50 border rounded py-1.5 px-2.5 text-xs resize-none focus-ring"
               />
             </div>
 
             <div className="flex gap-2 justify-end pt-3 border-t">
-              <button type="button" onClick={() => setFaqModalOpen(false)} className="px-3 py-1.5 border rounded text-xs">Cancel</button>
-              <button type="submit" className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-4 py-1.5 rounded text-xs font-bold">Save</button>
+              <button 
+                type="button" 
+                onClick={() => setFaqModalOpen(false)} 
+                className="px-3 py-1.5 border rounded text-xs hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors focus-ring"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-4 py-1.5 rounded text-xs font-bold hover:opacity-90 active:scale-95 transition-all focus-ring"
+              >
+                Save
+              </button>
             </div>
           </form>
         </div>

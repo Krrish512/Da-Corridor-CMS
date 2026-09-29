@@ -42,6 +42,19 @@ const Inquiries = () => {
   // Active message detail lightbox
   const [selectedMsg, setSelectedMsg] = useState(null);
 
+  // Escape key handler for message modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && selectedMsg) {
+        setSelectedMsg(null);
+      }
+    };
+    if (selectedMsg) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedMsg]);
+
   // ----------------------------------------------------
   // QUERIES
   // ----------------------------------------------------
@@ -372,11 +385,18 @@ const Inquiries = () => {
 
       {/* DETAIL INQUIRY LIGHTBOX MODAL */}
       {selectedMsg && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 backdrop-blur-xs">
-          <div className="bg-white dark:bg-neutral-900 border rounded-lg max-w-md w-full p-6 space-y-4 shadow-premium-lg animate-slide-in relative">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 backdrop-blur-xs p-4 animate-fade-in"
+          onClick={() => setSelectedMsg(null)}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg max-w-md w-full p-6 space-y-4 shadow-premium-lg animate-scale-in relative"
+          >
             <button
               onClick={() => setSelectedMsg(null)}
-              className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600"
+              className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600 p-1 rounded focus-ring"
+              aria-label="Close dialog"
             >
               <X className="w-4 h-4" />
             </button>
@@ -416,7 +436,7 @@ const Inquiries = () => {
               <button
                 type="button"
                 onClick={() => setSelectedMsg(null)}
-                className="px-3 py-1.5 border rounded text-xs"
+                className="px-3 py-1.5 border rounded text-xs hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors focus-ring"
               >
                 Close
               </button>
@@ -428,7 +448,7 @@ const Inquiries = () => {
                     deleteMsgMutation.mutate(selectedMsg.id);
                   }
                 }}
-                className="bg-rose-50 text-rose-600 hover:bg-rose-100 px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1"
+                className="bg-rose-50 text-rose-600 hover:bg-rose-100 active:scale-95 px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition-all focus-ring"
               >
                 <Trash2 className="w-3.5 h-3.5" /> Delete
               </button>

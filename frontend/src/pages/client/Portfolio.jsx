@@ -75,7 +75,7 @@ const Portfolio = () => {
                 setCategory(cat);
                 setPage(1);
               }}
-              className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-sm transition-all ${(category === cat || (cat === 'All' && !category))
+              className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-sm transition-all focus-ring ${(category === cat || (cat === 'All' && !category))
                   ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
                   : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800'
                 }`}
@@ -96,7 +96,7 @@ const Portfolio = () => {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white"
+            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white focus-ring"
           />
         </div>
       </div>
@@ -136,8 +136,17 @@ const Portfolio = () => {
             {projectsData.data.map((project) => (
               <div
                 key={project.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => handleOpenDetail(project)}
-                className="group cursor-pointer border border-neutral-200 dark:border-neutral-850 rounded-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-all duration-300"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleOpenDetail(project);
+                  }
+                }}
+                className="group cursor-pointer border border-neutral-200 dark:border-neutral-850 rounded-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-all duration-300 focus-ring"
+                aria-label={`View details for ${project.title}`}
               >
                 <div>
                   <div className="aspect-[4/3] relative overflow-hidden bg-neutral-100">
@@ -184,7 +193,8 @@ const Portfolio = () => {
               <button
                 onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                 disabled={page === 1}
-                className="p-2 border border-neutral-200 dark:border-neutral-800 rounded-sm hover:bg-neutral-100 dark:hover:bg-neutral-900 disabled:opacity-40 transition-colors"
+                className="p-2 border border-neutral-200 dark:border-neutral-800 rounded-sm hover:bg-neutral-100 dark:hover:bg-neutral-900 disabled:opacity-40 transition-colors focus-ring"
+                aria-label="Previous page"
               >
                 <ChevronLeft size={16} />
               </button>
@@ -194,7 +204,8 @@ const Portfolio = () => {
               <button
                 onClick={() => setPage((prev) => Math.min(prev + 1, projectsData.meta.totalPages))}
                 disabled={page === projectsData.meta?.totalPages}
-                className="p-2 border border-neutral-200 dark:border-neutral-800 rounded-sm hover:bg-neutral-100 dark:hover:bg-neutral-900 disabled:opacity-40 transition-colors"
+                className="p-2 border border-neutral-200 dark:border-neutral-800 rounded-sm hover:bg-neutral-100 dark:hover:bg-neutral-900 disabled:opacity-40 transition-colors focus-ring"
+                aria-label="Next page"
               >
                 <ChevronRight size={16} />
               </button>

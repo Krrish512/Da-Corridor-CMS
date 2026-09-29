@@ -162,9 +162,11 @@ const Comments = () => {
                             type="button"
                             onClick={() => handleRatingClick(star)}
                             onMouseEnter={() => setHoverRating(star)}
+                            onFocus={() => setHoverRating(star)}
+                            onBlur={() => setHoverRating(0)}
                             className="hover:scale-110 active:scale-95 transition-transform focus-ring rounded-sm p-0.5"
                             style={{ color: '#D4AF37' }}
-                            aria-label={`Rate ${star} star`}
+                            aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
                           >
                             <Star 
                               size={24} 
@@ -191,10 +193,10 @@ const Comments = () => {
                   <div className="flex gap-3 pt-2">
                     <button
                       type="submit"
-                      disabled={saveMutation.isLoading}
+                      disabled={saveMutation.isPending}
                       className="flex-grow inline-flex items-center justify-center px-4 py-2.5 text-xs font-semibold uppercase tracking-wider rounded transition-all duration-200 bg-[#0A2540] text-white hover:bg-[#D4AF37] hover:text-[#0A2540] active:scale-[0.98] focus-ring"
                     >
-                      {saveMutation.isLoading ? 'Submitting...' : 'Submit Review'}
+                      {saveMutation.isPending ? 'Submitting...' : 'Submit Review'}
                     </button>
                     <button
                       type="button"
@@ -213,8 +215,30 @@ const Comments = () => {
         {/* Right column: Comments/Reviews feed */}
         <div className="lg:col-span-8 space-y-8">
           {isLoading ? (
-            <div className="flex justify-center py-12">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white" />
+            <div className="grid grid-cols-1 gap-6">
+              {Array(3).fill(0).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="p-8 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/10 rounded-sm space-y-4"
+                >
+                  <div className="flex gap-1">
+                    {Array(5).fill(0).map((_, sIdx) => (
+                      <div key={sIdx} className="h-4 w-4 arch-skeleton rounded-sm" />
+                    ))}
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-3 w-full arch-skeleton" />
+                    <div className="h-3 w-4/5 arch-skeleton" />
+                  </div>
+                  <div className="flex items-center gap-3 pt-2">
+                    <div className="h-10 w-10 arch-skeleton rounded-full shrink-0" />
+                    <div className="space-y-1.5">
+                      <div className="h-3.5 w-28 arch-skeleton" />
+                      <div className="h-2.5 w-20 arch-skeleton" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : activeTestimonials.length === 0 ? (
             <div className="text-center py-16 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-sm text-neutral-400">

@@ -225,6 +225,15 @@
 .animate-fade-in   { animation: fade-in  0.2s ease-out forwards; }
 .animate-scale-in  { animation: scale-in 0.18s ease-out forwards; }
 
+/* ─── Admin sub-page content transition ──────────────────────────────────── */
+@keyframes admin-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.admin-content-enter {
+  animation: admin-enter 0.2s ease-out forwards;
+}
+
 /* ─── Public page transition (Phase 11 — PRESERVED) ────────────────────────── */
 @keyframes page-enter {
   from { opacity: 0; transform: translateY(12px); }
@@ -238,6 +247,7 @@
 /* Respect user's motion preference (Phase 11/13 — PRESERVED) */
 @media (prefers-reduced-motion: reduce) {
   .page-enter,
+  .admin-content-enter,
   .animate-slide-in,
   .animate-fade-in,
   .animate-scale-in,

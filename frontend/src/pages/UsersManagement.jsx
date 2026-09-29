@@ -70,6 +70,22 @@ const UsersManagement = () => {
     fetchUsers();
   }, [fetchUsers]);
 
+  // Escape key handler for modals
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (isCreateOpen) setIsCreateOpen(false);
+        if (isEditOpen) setIsEditOpen(false);
+        if (isResetPasswordOpen) setIsResetPasswordOpen(false);
+        if (isDeleteOpen) setIsDeleteOpen(false);
+      }
+    };
+    if (isCreateOpen || isEditOpen || isResetPasswordOpen || isDeleteOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isCreateOpen, isEditOpen, isResetPasswordOpen, isDeleteOpen]);
+
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -475,7 +491,7 @@ const UsersManagement = () => {
             <button
               onClick={() => setPage(prev => Math.min(meta.totalPages, prev + 1))}
               disabled={page >= meta.totalPages}
-              className="p-1.5 rounded border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 transition-colors"
+              className="p-1.5 rounded border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 transition-colors focus-ring"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -485,13 +501,23 @@ const UsersManagement = () => {
 
       {/* CREATE USER MODAL */}
       {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-neutral-200 dark:border-neutral-800 animate-scale-in">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+          onClick={() => setIsCreateOpen(false)}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-neutral-200 dark:border-neutral-800 animate-scale-in"
+          >
             <div className="px-6 py-4 flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800" style={{ background: '#0A2540' }}>
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <UserPlus className="w-4 h-4" style={{ color: '#D4AF37' }} /> Create New System User
               </h3>
-              <button onClick={() => setIsCreateOpen(false)} className="text-neutral-400 hover:text-white">
+              <button 
+                onClick={() => setIsCreateOpen(false)} 
+                className="text-neutral-400 hover:text-white p-1 rounded focus-ring"
+                aria-label="Close modal"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -512,7 +538,7 @@ const UsersManagement = () => {
                     type="button"
                     onClick={() => copyToClipboard(tempPasswordResult.tempPassword)}
                     title={copiedPass ? "Copied!" : "Copy to clipboard"}
-                    className="p-1.5 text-neutral-500 hover:text-[#D4AF37] hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded transition-colors"
+                    className="p-1.5 text-neutral-500 hover:text-[#D4AF37] hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded transition-colors focus-ring"
                   >
                     {copiedPass ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                   </button>
@@ -523,7 +549,7 @@ const UsersManagement = () => {
 
                 <button
                   onClick={() => setIsCreateOpen(false)}
-                  className="w-full py-2 rounded-lg text-xs font-bold text-[#0A2540]"
+                  className="w-full py-2 rounded-lg text-xs font-bold text-[#0A2540] hover:opacity-95 active:scale-[0.99] transition-all focus-ring"
                   style={{ background: '#D4AF37' }}
                 >
                   Done
@@ -538,7 +564,7 @@ const UsersManagement = () => {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md py-2 px-3 text-xs focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md py-2 px-3 text-xs focus:outline-none focus:border-[#D4AF37] focus-ring"
                     placeholder="e.g. Sarah Jenkins"
                   />
                 </div>
@@ -550,7 +576,7 @@ const UsersManagement = () => {
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md py-2 px-3 text-xs focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md py-2 px-3 text-xs focus:outline-none focus:border-[#D4AF37] focus-ring"
                     placeholder="s.jenkins@dacorridor.com"
                   />
                 </div>
@@ -560,7 +586,7 @@ const UsersManagement = () => {
                   <select
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md py-2 px-3 text-xs focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md py-2 px-3 text-xs focus:outline-none focus:border-[#D4AF37] focus-ring"
                   >
                     <option value="CO_ADMIN">Co-Admin (Manager — CMS Content Only)</option>
                     <option value="ADMIN">Admin (Full Content & Logs Access)</option>
@@ -574,14 +600,14 @@ const UsersManagement = () => {
                   <button
                     type="button"
                     onClick={() => setIsCreateOpen(false)}
-                    className="px-4 py-2 rounded-md text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    className="px-4 py-2 rounded-md text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors focus-ring"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-5 py-2 rounded-md text-xs font-bold text-[#0A2540] transition-opacity hover:opacity-90 disabled:opacity-50"
+                    className="px-5 py-2 rounded-md text-xs font-bold text-[#0A2540] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 focus-ring"
                     style={{ background: '#D4AF37' }}
                   >
                     {submitting ? 'Creating...' : 'Create Account'}
@@ -595,13 +621,23 @@ const UsersManagement = () => {
 
       {/* EDIT USER MODAL */}
       {isEditOpen && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-neutral-200 dark:border-neutral-800 animate-scale-in">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+          onClick={() => setIsEditOpen(false)}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-neutral-200 dark:border-neutral-800 animate-scale-in"
+          >
             <div className="px-6 py-4 flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800" style={{ background: '#0A2540' }}>
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <Edit3 className="w-4 h-4" style={{ color: '#D4AF37' }} /> Edit User Account
               </h3>
-              <button onClick={() => setIsEditOpen(false)} className="text-neutral-400 hover:text-white">
+              <button 
+                onClick={() => setIsEditOpen(false)} 
+                className="text-neutral-400 hover:text-white p-1 rounded focus-ring"
+                aria-label="Close modal"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -614,7 +650,7 @@ const UsersManagement = () => {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md py-2 px-3 text-xs focus:outline-none focus:border-[#D4AF37]"
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md py-2 px-3 text-xs focus:outline-none focus:border-[#D4AF37] focus-ring"
                 />
               </div>
 
@@ -625,7 +661,7 @@ const UsersManagement = () => {
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md py-2 px-3 text-xs focus:outline-none focus:border-[#D4AF37]"
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md py-2 px-3 text-xs focus:outline-none focus:border-[#D4AF37] focus-ring"
                 />
               </div>
 
@@ -635,7 +671,7 @@ const UsersManagement = () => {
                   value={formData.role}
                   disabled={currentUser?.id === selectedUser.id || (selectedUser.role === 'SUPER_ADMIN' && currentUser?.role !== 'SUPER_ADMIN')}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md py-2 px-3 text-xs focus:outline-none focus:border-[#D4AF37] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md py-2 px-3 text-xs focus:outline-none focus:border-[#D4AF37] disabled:opacity-50 disabled:cursor-not-allowed focus-ring"
                 >
                   <option value="CO_ADMIN">Co-Admin (Manager — CMS Content Only)</option>
                   <option value="ADMIN">Admin (Full Content & Logs Access)</option>
@@ -655,14 +691,14 @@ const UsersManagement = () => {
                 <button
                   type="button"
                   onClick={() => setIsEditOpen(false)}
-                  className="px-4 py-2 rounded-md text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  className="px-4 py-2 rounded-md text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors focus-ring"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 rounded-md text-xs font-bold text-[#0A2540] transition-opacity hover:opacity-90 disabled:opacity-50"
+                  className="px-5 py-2 rounded-md text-xs font-bold text-[#0A2540] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 focus-ring"
                   style={{ background: '#D4AF37' }}
                 >
                   {submitting ? 'Saving...' : 'Save Changes'}
@@ -675,13 +711,23 @@ const UsersManagement = () => {
 
       {/* RESET PASSWORD MODAL */}
       {isResetPasswordOpen && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-neutral-200 dark:border-neutral-800 animate-scale-in">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+          onClick={() => setIsResetPasswordOpen(false)}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-neutral-200 dark:border-neutral-800 animate-scale-in"
+          >
             <div className="px-6 py-4 flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800" style={{ background: '#0A2540' }}>
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <Key className="w-4 h-4" style={{ color: '#D4AF37' }} /> Reset Password for {selectedUser.name}
               </h3>
-              <button onClick={() => setIsResetPasswordOpen(false)} className="text-neutral-400 hover:text-white">
+              <button 
+                onClick={() => setIsResetPasswordOpen(false)} 
+                className="text-neutral-400 hover:text-white p-1 rounded focus-ring"
+                aria-label="Close modal"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -702,7 +748,7 @@ const UsersManagement = () => {
                     type="button"
                     onClick={() => copyToClipboard(tempPasswordResult.tempPassword)}
                     title={copiedPass ? "Copied!" : "Copy to clipboard"}
-                    className="p-1.5 text-neutral-500 hover:text-[#D4AF37] hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded transition-colors"
+                    className="p-1.5 text-neutral-500 hover:text-[#D4AF37] hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded transition-colors focus-ring"
                   >
                     {copiedPass ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                   </button>
@@ -710,7 +756,7 @@ const UsersManagement = () => {
 
                 <button
                   onClick={() => setIsResetPasswordOpen(false)}
-                  className="w-full py-2 rounded-lg text-xs font-bold text-[#0A2540]"
+                  className="w-full py-2 rounded-lg text-xs font-bold text-[#0A2540] hover:opacity-95 active:scale-[0.99] transition-all focus-ring"
                   style={{ background: '#D4AF37' }}
                 >
                   Done
@@ -729,7 +775,7 @@ const UsersManagement = () => {
                     placeholder="Leave blank to auto-generate"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md py-2 px-3 text-xs focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md py-2 px-3 text-xs focus:outline-none focus:border-[#D4AF37] focus-ring"
                   />
                 </div>
 
@@ -737,14 +783,14 @@ const UsersManagement = () => {
                   <button
                     type="button"
                     onClick={() => setIsResetPasswordOpen(false)}
-                    className="px-4 py-2 rounded-md text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    className="px-4 py-2 rounded-md text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors focus-ring"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-5 py-2 rounded-md text-xs font-bold text-[#0A2540] transition-opacity hover:opacity-90 disabled:opacity-50"
+                    className="px-5 py-2 rounded-md text-xs font-bold text-[#0A2540] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 focus-ring"
                     style={{ background: '#D4AF37' }}
                   >
                     {submitting ? 'Resetting...' : 'Reset Password'}
@@ -758,8 +804,14 @@ const UsersManagement = () => {
 
       {/* DELETE CONFIRMATION MODAL */}
       {isDeleteOpen && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-neutral-200 dark:border-neutral-800 animate-scale-in">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+          onClick={() => setIsDeleteOpen(false)}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-neutral-200 dark:border-neutral-800 animate-scale-in"
+          >
             <div className="p-6 text-center space-y-4">
               <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/50 text-rose-600 flex items-center justify-center mx-auto">
                 <AlertTriangle className="w-6 h-6" />
@@ -773,14 +825,14 @@ const UsersManagement = () => {
                 <button
                   type="button"
                   onClick={() => setIsDeleteOpen(false)}
-                  className="px-4 py-2 rounded-md text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  className="px-4 py-2 rounded-md text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors focus-ring"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDeleteSubmit}
                   disabled={submitting}
-                  className="px-5 py-2 rounded-md text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors disabled:opacity-50"
+                  className="px-5 py-2 rounded-md text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all disabled:opacity-50 focus-ring"
                 >
                   {submitting ? 'Deleting...' : 'Delete User'}
                 </button>

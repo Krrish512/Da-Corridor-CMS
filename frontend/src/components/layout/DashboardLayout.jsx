@@ -467,7 +467,9 @@ const DashboardLayout = () => {
 
         {/* WORKSPACE CONTENT AREA */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 select-none bg-background text-foreground">
-          <Outlet />
+          <div key={location.pathname} className="admin-content-enter min-h-full">
+            <Outlet />
+          </div>
         </main>
       </div>
 

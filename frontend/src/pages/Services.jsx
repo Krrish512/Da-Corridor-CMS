@@ -34,6 +34,19 @@ const Services = () => {
   };
   const [form, setForm] = useState(initialFormState);
 
+  // Escape key handler for dialog
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && modalOpen) {
+        setModalOpen(false);
+      }
+    };
+    if (modalOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [modalOpen]);
+
   // ----------------------------------------------------
   // QUERY
   // ----------------------------------------------------
@@ -232,10 +245,14 @@ const Services = () => {
 
       {/* SERVICE DIALOG */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 backdrop-blur-xs">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 backdrop-blur-xs p-4 animate-fade-in"
+          onClick={() => setModalOpen(false)}
+        >
           <form
             onSubmit={handleSubmit}
-            className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-6 w-full max-w-md space-y-4 shadow-premium-lg animate-slide-in"
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-6 w-full max-w-md space-y-4 shadow-premium-lg animate-scale-in"
           >
             <div className="flex items-center justify-between pb-2 border-b">
               <h3 className="text-xs font-bold uppercase tracking-wider">
@@ -244,7 +261,8 @@ const Services = () => {
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                className="text-neutral-400 hover:text-neutral-600"
+                className="text-neutral-400 hover:text-neutral-600 p-1 rounded focus-ring"
+                aria-label="Close dialog"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -258,7 +276,7 @@ const Services = () => {
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   placeholder="Residential Design"
-                  className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1.5 px-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-neutral-950"
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1.5 px-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-neutral-950 focus-ring"
                 />
               </div>
 
@@ -268,7 +286,7 @@ const Services = () => {
                   <select
                     value={form.icon}
                     onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                    className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1.5 px-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-neutral-950"
+                    className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1.5 px-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-neutral-950 focus-ring"
                   >
                     {SERVICE_ICON_LIST.map((iconName) => (
                       <option key={iconName} value={iconName}>
@@ -299,7 +317,7 @@ const Services = () => {
                   type="number"
                   value={form.displayOrder}
                   onChange={(e) => setForm({ ...form, displayOrder: parseInt(e.target.value) || 0 })}
-                  className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1.5 px-2.5 text-xs"
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1.5 px-2.5 text-xs focus-ring"
                 />
               </div>
             </div>
@@ -311,7 +329,7 @@ const Services = () => {
                 value={form.shortDescription}
                 onChange={(e) => setForm({ ...form, shortDescription: e.target.value })}
                 placeholder="High-end private residential spatial engineering."
-                className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1.5 px-2.5 text-xs"
+                className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1.5 px-2.5 text-xs focus-ring"
               />
             </div>
 
@@ -322,7 +340,7 @@ const Services = () => {
                 value={form.fullDescription}
                 onChange={(e) => setForm({ ...form, fullDescription: e.target.value })}
                 placeholder="Detailing our complete services scope..."
-                className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1.5 px-2.5 text-xs resize-none"
+                className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1.5 px-2.5 text-xs resize-none focus-ring"
               />
             </div>
 
@@ -332,7 +350,7 @@ const Services = () => {
                 id="isActive"
                 checked={form.isActive}
                 onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                className="rounded text-neutral-900 focus:ring-neutral-900"
+                className="rounded text-neutral-900 focus:ring-neutral-900 focus-ring"
               />
               <label htmlFor="isActive" className="text-xs text-neutral-500 font-semibold select-none">
                 Service Active Status (Show on website)
@@ -343,14 +361,14 @@ const Services = () => {
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                className="px-3 py-1.5 border rounded text-xs"
+                className="px-3 py-1.5 border rounded text-xs hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors focus-ring"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={saveMutation.isPending}
-                className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-4 py-1.5 rounded text-xs font-bold flex items-center gap-1"
+                className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-4 py-1.5 rounded text-xs font-bold flex items-center gap-1 hover:opacity-90 active:scale-95 transition-all focus-ring"
               >
                 <Save className="w-3.5 h-3.5" />
                 {saveMutation.isPending ? 'Saving...' : 'Save'}
