@@ -5,6 +5,7 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../utils/api';
+import SEO from '../components/common/SEO';
 
 const Login = () => {
   const { login, isAuthenticated } = useAuth();
@@ -102,6 +103,10 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex bg-[#F8F7F4] text-[#111827] font-sans antialiased selection:bg-[#111827] selection:text-white">
+      <SEO
+        title="Admin Access & Security"
+        robots="noindex, nofollow"
+      />
       
       {/* ── Left Column: Brand & Architecture Aesthetic ──────────────────────── */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-5/12 flex-col justify-between p-12 lg:p-16 border-r border-neutral-200/70 relative overflow-hidden bg-[#F8F7F4] select-none">

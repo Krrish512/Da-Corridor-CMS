@@ -9,6 +9,7 @@ import {
 
 import { useAuth } from '../../context/AuthContext';
 import NotificationCenter from '../common/NotificationCenter';
+import SEO from '../common/SEO';
 
 const UserProfileModal = lazy(() => import('../user/UserProfileModal'));
 
@@ -268,10 +269,9 @@ const DashboardLayout = () => {
           </div>
           <button
             onClick={logout}
-            className="p-1 transition-colors"
-            style={{ color: 'rgba(255,255,255,0.45)' }}
-            onMouseEnter={e => e.currentTarget.style.color = '#f87171'}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}
+            className="p-1 text-white/45 hover:text-rose-400 transition-colors focus-ring rounded"
+            title="Sign Out"
+            aria-label="Sign Out"
           >
             <LogOut className="w-4 h-4" />
           </button>
@@ -282,6 +282,10 @@ const DashboardLayout = () => {
 
   return (
     <div className="min-h-screen flex" style={{ background: 'var(--arch-bg, #F7F7F5)' }}>
+      <SEO
+        title="Admin Control Center"
+        robots="noindex, nofollow"
+      />
 
       {/* Profile Modal */}
       <UserProfileModal

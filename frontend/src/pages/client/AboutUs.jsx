@@ -176,22 +176,22 @@ const AboutUs = () => {
                 {/* Social icons */}
                 <div className="px-6 py-4 border-t border-neutral-100 dark:border-neutral-800/80 flex gap-4 text-neutral-400">
                   {member.facebook && (
-                    <a href={member.facebook} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} on Facebook`} className="transition-colors" style={{ color: 'rgba(107,114,128,1)' }} onMouseEnter={e => e.currentTarget.style.color = '#D4AF37'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(107,114,128,1)'}>
+                    <a href={member.facebook} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} on Facebook`} className="text-neutral-400 hover:text-[#D4AF37] transition-colors focus-ring rounded-sm">
                       <Facebook size={16} />
                     </a>
                   )}
                   {member.twitter && (
-                    <a href={member.twitter} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} on Twitter`} className="transition-colors" style={{ color: 'rgba(107,114,128,1)' }} onMouseEnter={e => e.currentTarget.style.color = '#D4AF37'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(107,114,128,1)'}>
+                    <a href={member.twitter} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} on Twitter`} className="text-neutral-400 hover:text-[#D4AF37] transition-colors focus-ring rounded-sm">
                       <Twitter size={16} />
                     </a>
                   )}
                   {member.linkedin && (
-                    <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} on LinkedIn`} className="transition-colors" style={{ color: 'rgba(107,114,128,1)' }} onMouseEnter={e => e.currentTarget.style.color = '#D4AF37'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(107,114,128,1)'}>
+                    <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} on LinkedIn`} className="text-neutral-400 hover:text-[#D4AF37] transition-colors focus-ring rounded-sm">
                       <Linkedin size={16} />
                     </a>
                   )}
                   {member.instagram && (
-                    <a href={member.instagram} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} on Instagram`} className="transition-colors" style={{ color: 'rgba(107,114,128,1)' }} onMouseEnter={e => e.currentTarget.style.color = '#D4AF37'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(107,114,128,1)'}>
+                    <a href={member.instagram} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} on Instagram`} className="text-neutral-400 hover:text-[#D4AF37] transition-colors focus-ring rounded-sm">
                       <Instagram size={16} />
                     </a>
                   )}

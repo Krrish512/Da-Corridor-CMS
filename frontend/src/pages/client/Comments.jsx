@@ -68,6 +68,11 @@ const Comments = () => {
 
   return (
     <div className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <SEO
+        title="Client Reviews & Comments"
+        description="Read verified reviews, experiences, and architectural feedback from Da' Corridor clients."
+        path="/comments"
+      />
       {/* HEADER */}
       <div className="text-center max-w-3xl mx-auto mb-16">
         <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>
