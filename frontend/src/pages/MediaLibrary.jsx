@@ -30,6 +30,18 @@ const MediaLibrary = () => {
   const [newFolderName, setNewFolderName] = useState('');
   const [showFolderInput, setShowFolderInput] = useState(false);
 
+  // Keyboard navigation: Escape closes open modal/lightbox
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (uploadModalOpen) setUploadModalOpen(false);
+        if (previewItem) setPreviewItem(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [uploadModalOpen, previewItem]);
+
   // ----------------------------------------------------
   // QUERY
   // ----------------------------------------------------
@@ -299,17 +311,18 @@ const MediaLibrary = () => {
 
       {/* UPLOAD MODAL */}
       {uploadModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 backdrop-blur-xs animate-fade-in" onClick={() => setUploadModalOpen(false)}>
           <form
             onSubmit={handleUploadSubmit}
-            className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-6 w-full max-w-sm space-y-4 shadow-premium-lg animate-slide-in"
+            onClick={e => e.stopPropagation()}
+            className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-6 w-full max-w-sm space-y-4 shadow-premium-lg animate-scale-in"
           >
             <div className="flex items-center justify-between pb-2 border-b">
               <h3 className="text-xs font-bold uppercase tracking-wider">Upload New Asset</h3>
-              <button type="button" onClick={() => setUploadModalOpen(false)} className="text-neutral-400 hover:text-neutral-600"><X className="w-4 h-4" /></button>
+              <button type="button" onClick={() => setUploadModalOpen(false)} className="text-neutral-400 hover:text-neutral-600 focus-ring rounded p-1" aria-label="Close upload modal"><X className="w-4 h-4" /></button>
             </div>
 
-            <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center bg-neutral-50 dark:bg-neutral-850 hover:bg-neutral-100/50 cursor-pointer relative">
+            <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center bg-neutral-50 dark:bg-neutral-850 hover:bg-neutral-100/50 cursor-pointer relative focus-ring">
               <input
                 type="file"
                 onChange={handleFileChange}
@@ -332,7 +345,7 @@ const MediaLibrary = () => {
                 <select
                   value={uploadCategory}
                   onChange={(e) => setUploadCategory(e.target.value)}
-                  className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1 px-2 text-xs"
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1 px-2 text-xs focus-ring"
                 >
                   <option value="General">General</option>
                   <option value="Residential">Residential</option>
@@ -347,17 +360,17 @@ const MediaLibrary = () => {
                   type="text"
                   value={uploadFolder}
                   onChange={(e) => setUploadFolder(e.target.value)}
-                  className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1 px-2.5 text-xs"
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border rounded py-1 px-2.5 text-xs focus-ring"
                 />
               </div>
             </div>
 
             <div className="flex gap-2 justify-end pt-3 border-t">
-              <button type="button" onClick={() => setUploadModalOpen(false)} className="px-3 py-1.5 border rounded text-xs">Cancel</button>
+              <button type="button" onClick={() => setUploadModalOpen(false)} className="px-3 py-1.5 border rounded text-xs focus-ring">Cancel</button>
               <button
                 type="submit"
                 disabled={uploadMutation.isPending}
-                className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-4 py-1.5 rounded text-xs font-bold"
+                className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-4 py-1.5 rounded text-xs font-bold active:scale-[0.98] transition-all focus-ring"
               >
                 {uploadMutation.isPending ? 'Uploading...' : 'Upload'}
               </button>
@@ -368,11 +381,12 @@ const MediaLibrary = () => {
 
       {/* PREVIEW LIGHTBOX */}
       {previewItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/70 backdrop-blur-xs">
-          <div className="bg-white dark:bg-neutral-900 border rounded-lg max-w-xl w-full p-6 space-y-4 shadow-premium-lg animate-slide-in relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/70 backdrop-blur-xs animate-fade-in" onClick={() => setPreviewItem(null)}>
+          <div className="bg-white dark:bg-neutral-900 border rounded-lg max-w-xl w-full p-6 space-y-4 shadow-premium-lg animate-scale-in relative" onClick={e => e.stopPropagation()}>
             <button
               onClick={() => setPreviewItem(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-full bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-500"
+              className="absolute top-4 right-4 p-1.5 rounded-full bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-500 focus-ring"
+              aria-label="Close preview"
             >
               <X className="w-4 h-4" />
             </button>
@@ -399,7 +413,7 @@ const MediaLibrary = () => {
                     deleteMutation.mutate(previewItem.id);
                   }
                 }}
-                className="bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/20 dark:text-rose-400 p-2.5 rounded-md flex items-center gap-1 text-[11px] font-bold"
+                className="bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/20 dark:text-rose-400 p-2.5 rounded-md flex items-center gap-1 text-[11px] font-bold active:scale-[0.98] transition-all focus-ring"
               >
                 <Trash2 className="w-3.5 h-3.5" /> Delete Asset
               </button>

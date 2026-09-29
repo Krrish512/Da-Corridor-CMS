@@ -1,15 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const ProjectDetailModal = ({ selectedProject, onClose }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  if (!selectedProject) return null;
-
-  const allImages = [
+  const allImages = selectedProject ? [
     { url: selectedProject.coverImage },
     ...([...(selectedProject.images || [])].sort((a, b) => a.order - b.order)),
-  ];
+  ] : [];
 
   const nextImage = () => {
     if (!allImages.length) return;
@@ -21,19 +19,38 @@ const ProjectDetailModal = ({ selectedProject, onClose }) => {
     setActiveImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
 
+  // Keyboard navigation: Escape to close, Left/Right arrows to flip images
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      } else if (e.key === 'ArrowRight') {
+        nextImage();
+      } else if (e.key === 'ArrowLeft') {
+        prevImage();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [allImages.length, onClose]);
+
+  if (!selectedProject) return null;
+
   return (
     <div
-      className="fixed inset-0 z-50 bg-neutral-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 bg-neutral-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="bg-neutral-50 dark:bg-neutral-950 max-w-5xl w-full rounded-sm border border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col relative max-h-[90vh]"
+        className="bg-neutral-50 dark:bg-neutral-950 max-w-5xl w-full rounded-sm border border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col relative max-h-[90vh] shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 z-30 p-2 bg-neutral-900/60 hover:bg-neutral-900 text-white rounded-full transition-colors"
+          className="absolute right-4 top-4 z-30 p-2 bg-neutral-900/60 hover:bg-neutral-900 text-white rounded-full transition-colors focus-ring"
+          aria-label="Close Project Detail Modal"
         >
           <X size={20} />
         </button>
@@ -47,7 +64,7 @@ const ProjectDetailModal = ({ selectedProject, onClose }) => {
                   src={allImages[activeImageIndex]?.url}
                   alt={`${selectedProject.title} slideshow`}
                   decoding="async"
-                  className="w-full h-full object-contain max-h-[60vh] lg:max-h-none"
+                  className="w-full h-full object-contain max-h-[60vh] lg:max-h-none transition-opacity duration-200"
                 />
 
                 {/* Navigation Arrows */}
@@ -55,13 +72,15 @@ const ProjectDetailModal = ({ selectedProject, onClose }) => {
                   <>
                     <button
                       onClick={prevImage}
-                      className="absolute left-4 p-2 bg-neutral-900/50 hover:bg-neutral-900 text-white rounded-full transition-colors"
+                      className="absolute left-4 p-2 bg-neutral-900/50 hover:bg-neutral-900 text-white rounded-full transition-colors focus-ring"
+                      aria-label="Previous Image"
                     >
                       <ChevronLeft size={20} />
                     </button>
                     <button
                       onClick={nextImage}
-                      className="absolute right-4 p-2 bg-neutral-900/50 hover:bg-neutral-900 text-white rounded-full transition-colors"
+                      className="absolute right-4 p-2 bg-neutral-900/50 hover:bg-neutral-900 text-white rounded-full transition-colors focus-ring"
+                      aria-label="Next Image"
                     >
                       <ChevronRight size={20} />
                     </button>

@@ -27,18 +27,18 @@ const ImagePreview = ({
         />
         
         {/* Glassmorphic Hover Overlay */}
-        <div className="absolute inset-0 bg-neutral-950/50 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2.5">
+        <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2.5">
           <button
             type="button"
             onClick={onReplace}
-            className="px-3 py-1.5 bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white rounded-md text-xs font-bold shadow hover:bg-neutral-100 dark:hover:bg-neutral-800 transition flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-1.5 bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white rounded-md text-xs font-bold shadow hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all flex items-center gap-1.5 cursor-pointer focus-ring active:scale-95"
           >
             <Upload className="w-3.5 h-3.5" /> Replace
           </button>
           <button
             type="button"
             onClick={onRemove}
-            className="px-3 py-1.5 bg-rose-600 text-white rounded-md text-xs font-bold shadow hover:bg-rose-700 transition flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-1.5 bg-rose-600 text-white rounded-md text-xs font-bold shadow hover:bg-rose-700 transition-all flex items-center gap-1.5 cursor-pointer focus-ring active:scale-95"
           >
             <Trash2 className="w-3.5 h-3.5" /> Remove
           </button>
@@ -87,7 +87,7 @@ const ImagePreview = ({
                 <button
                   type="button"
                   onClick={() => onRemove(idx)}
-                  className="p-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-full shadow-md transition"
+                  className="p-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-full shadow-md transition-all focus-ring active:scale-90"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

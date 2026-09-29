@@ -78,12 +78,24 @@ const DashboardLayout = () => {
     }
   };
 
-  // Close overlays on route change
+  // Close overlays on route change or Escape key
   useEffect(() => {
     setMobileSidebarOpen(false);
     setProfileDropdownOpen(false);
     setNotificationsOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (mobileSidebarOpen) setMobileSidebarOpen(false);
+        if (profileDropdownOpen) setProfileDropdownOpen(false);
+        if (notificationsOpen) setNotificationsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileSidebarOpen, profileDropdownOpen, notificationsOpen]);
 
   // Sidebar Menu Configuration (Filtered by permissions)
   const menuGroupsRaw = [
@@ -278,30 +290,34 @@ const DashboardLayout = () => {
         initialTab={profileModalTab}
       />
 
-      {/* MOBILE SIDEBAR OVERLAY */}
-      {mobileSidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 lg:hidden"
-          style={{ background: 'rgba(10,37,64,0.6)', backdropFilter: 'blur(2px)' }}
-          onClick={() => setMobileSidebarOpen(false)}
+      {/* MOBILE SIDEBAR OVERLAY (Smooth CSS open & close) */}
+      <div
+        className={`fixed inset-0 z-40 lg:hidden transition-all duration-300 ease-out ${
+          mobileSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        style={{ background: 'rgba(10,37,64,0.6)', backdropFilter: 'blur(4px)' }}
+        onClick={() => setMobileSidebarOpen(false)}
+        aria-hidden={!mobileSidebarOpen}
+      >
+        <aside
+          className={`fixed top-0 left-0 bottom-0 w-64 flex flex-col shadow-2xl transition-transform duration-300 ease-out ${
+            mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+          style={{ background: '#0A2540' }}
+          onClick={e => e.stopPropagation()}
         >
-          <aside
-            className="fixed top-0 left-0 bottom-0 w-64 flex flex-col"
-            style={{ background: '#0A2540' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="absolute right-3 top-3">
-              <button
-                onClick={() => setMobileSidebarOpen(false)}
-                className="p-1.5 rounded text-white/60 hover:text-white hover:bg-white/10"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <SidebarContent />
-          </aside>
-        </div>
-      )}
+          <div className="absolute right-3 top-3">
+            <button
+              onClick={() => setMobileSidebarOpen(false)}
+              className="p-1.5 rounded text-white/60 hover:text-white hover:bg-white/10 focus-ring"
+              aria-label="Close sidebar"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <SidebarContent />
+        </aside>
+      </div>
 
       {/* DESKTOP SIDEBAR */}
       <aside

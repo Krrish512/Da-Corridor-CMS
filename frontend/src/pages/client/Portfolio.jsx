@@ -101,10 +101,29 @@ const Portfolio = () => {
         </div>
       </div>
 
-      {/* LOADER */}
+      {/* LOADER / SKELETON */}
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {Array(6).fill(0).map((_, idx) => (
+            <div
+              key={idx}
+              className="border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden flex flex-col justify-between bg-white dark:bg-neutral-900/10"
+            >
+              <div>
+                <div className="aspect-[4/3] w-full arch-skeleton" />
+                <div className="p-6 space-y-3">
+                  <div className="h-3 w-20 arch-skeleton" />
+                  <div className="h-6 w-3/4 arch-skeleton" />
+                  <div className="h-4 w-full arch-skeleton" />
+                  <div className="h-4 w-2/3 arch-skeleton" />
+                </div>
+              </div>
+              <div className="px-6 py-4 border-t border-neutral-100 dark:border-neutral-800 flex justify-between">
+                <div className="h-3 w-24 arch-skeleton" />
+                <div className="h-3 w-16 arch-skeleton" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : !projectsData?.data || projectsData.data.length === 0 ? (
         <div className="text-center py-20 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-sm">

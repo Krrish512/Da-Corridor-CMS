@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
   ChevronDown, ChevronUp, Calendar, HelpCircle, X, ArrowRight, Tag 
@@ -13,6 +13,17 @@ const Blog = () => {
   
   // Selected blog article for overlay reading
   const [selectedArticle, setSelectedArticle] = useState(null);
+
+  // Close modal on Escape
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && selectedArticle) {
+        setSelectedArticle(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedArticle]);
 
   // Queries
   const { data: blogs, isLoading: blogsLoading } = useQuery({
@@ -52,8 +63,31 @@ const Blog = () => {
         </div>
 
         {blogsLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array(6).fill(0).map((_, idx) => (
+              <div
+                key={idx}
+                className="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/10 rounded-sm overflow-hidden flex flex-col justify-between"
+              >
+                <div>
+                  <div className="aspect-[16/10] w-full arch-skeleton" />
+                  <div className="p-6 space-y-3">
+                    <div className="flex gap-2">
+                      <div className="h-3 w-16 arch-skeleton" />
+                      <div className="h-3 w-20 arch-skeleton" />
+                    </div>
+                    <div className="h-5 w-5/6 arch-skeleton" />
+                    <div className="flex gap-1.5 pt-1">
+                      <div className="h-4 w-12 arch-skeleton" />
+                      <div className="h-4 w-14 arch-skeleton" />
+                    </div>
+                  </div>
+                </div>
+                <div className="px-6 pb-6 pt-0">
+                  <div className="h-4 w-24 arch-skeleton" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : !blogs || blogs.length === 0 ? (
           <div className="text-center py-12 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-sm text-neutral-400">
@@ -106,7 +140,7 @@ const Blog = () => {
                 <div className="px-6 pb-6 pt-0">
                   <button 
                     onClick={() => setSelectedArticle(blog)}
-                    className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-colors" style={{ color: '#D4AF37' }}
+                    className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-colors text-[#D4AF37] hover:text-[#B8941F] focus-ring rounded-sm"
                   >
                     Read Article <ArrowRight size={14} />
                   </button>
@@ -130,8 +164,12 @@ const Blog = () => {
         </div>
 
         {faqsLoading ? (
-          <div className="flex justify-center items-center h-48">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900" />
+          <div className="max-w-3xl mx-auto space-y-4">
+            {Array(4).fill(0).map((_, idx) => (
+              <div key={idx} className="border border-neutral-200 dark:border-neutral-800 rounded-sm p-5 space-y-3">
+                <div className="h-4 w-3/4 arch-skeleton" />
+              </div>
+            ))}
           </div>
         ) : !faqs || faqs.length === 0 ? (
           <div className="text-center py-12 text-neutral-400">
@@ -144,23 +182,32 @@ const Blog = () => {
               return (
                 <div 
                   key={faq.id} 
-                  className="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/10 rounded-sm"
+                  className="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/10 rounded-sm overflow-hidden transition-colors"
                 >
                   <button
                     onClick={() => toggleFaq(idx)}
-                    className="w-full px-6 py-5 text-left flex justify-between items-center hover:bg-neutral-100/50 dark:hover:bg-neutral-900/40 transition-colors"
+                    className="w-full px-6 py-5 text-left flex justify-between items-center hover:bg-neutral-100/50 dark:hover:bg-neutral-900/40 transition-colors focus-ring"
+                    aria-expanded={isOpen}
                   >
                     <span className="text-base font-semibold text-neutral-950 dark:text-white font-display flex items-center gap-3">
                       <HelpCircle size={18} className="shrink-0" style={{ color: '#D4AF37' }} />
                       {faq.question}
                     </span>
-                    {isOpen ? <ChevronUp size={18} className="text-neutral-500" /> : <ChevronDown size={18} className="text-neutral-500" />}
+                    <span className="transition-transform duration-200 ease-out" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                      <ChevronDown size={18} className="text-neutral-500" />
+                    </span>
                   </button>
-                  {isOpen && (
-                    <div className="px-6 pb-6 pt-0 text-sm font-light text-neutral-500 dark:text-neutral-400 leading-relaxed border-t border-neutral-100 dark:border-neutral-800/60 pt-4">
-                      {faq.answer}
+                  <div
+                    className={`grid transition-all duration-200 ease-out ${
+                      isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="px-6 pb-6 pt-0 text-sm font-light text-neutral-500 dark:text-neutral-400 leading-relaxed border-t border-neutral-100 dark:border-neutral-800/60 pt-4">
+                        {faq.answer}
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               );
             })}
@@ -170,15 +217,16 @@ const Blog = () => {
 
       {/* ARTICLE READ DETAIL MODAL */}
       {selectedArticle && (
-        <div className="fixed inset-0 z-50 bg-neutral-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto" onClick={() => setSelectedArticle(null)}>
+        <div className="fixed inset-0 z-50 bg-neutral-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fade-in" onClick={() => setSelectedArticle(null)}>
           <div 
-            className="bg-neutral-50 dark:bg-neutral-950 max-w-3xl w-full rounded-sm border border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col relative max-h-[90vh]"
+            className="bg-neutral-50 dark:bg-neutral-950 max-w-3xl w-full rounded-sm border border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col relative max-h-[90vh] shadow-2xl animate-scale-in"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
             <button 
               onClick={() => setSelectedArticle(null)}
-              className="absolute right-4 top-4 z-30 p-2 bg-neutral-900/60 hover:bg-neutral-900 text-white rounded-full transition-colors"
+              className="absolute right-4 top-4 z-30 p-2 bg-neutral-900/60 hover:bg-neutral-900 text-white rounded-full transition-colors focus-ring"
+              aria-label="Close Article Modal"
             >
               <X size={20} />
             </button>

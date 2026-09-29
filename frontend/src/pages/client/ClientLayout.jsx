@@ -41,9 +41,14 @@ const ClientLayout = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Global Keyboard Shortcut: Ctrl + Shift + A (Windows/Linux) or Cmd + Shift + A (macOS)
+  // Global Keyboard Shortcut: Ctrl + Shift + A (Windows/Linux) or Cmd + Shift + A (macOS) & Escape to close menu
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+        return;
+      }
+
       const isCtrlOrCmd = e.ctrlKey || e.metaKey;
       const isShift = e.shiftKey;
       const isKeyA = e.code === 'KeyA' || (e.key && e.key.toLowerCase() === 'a');
@@ -68,7 +73,7 @@ const ClientLayout = () => {
 
     window.addEventListener('keydown', handleKeyDown, true);
     return () => window.removeEventListener('keydown', handleKeyDown, true);
-  }, [navigate]);
+  }, [navigate, mobileMenuOpen]);
 
   const toggleDarkMode = () => {
     const next = !darkMode;
@@ -149,7 +154,7 @@ const ClientLayout = () => {
           <div className="hidden md:flex items-center gap-3">
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-full border transition-all duration-200 hover:scale-105"
+              className="p-2 rounded-full border transition-all duration-200 hover:scale-105 focus-ring"
               style={{ borderColor: darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(10,37,64,0.15)', color: darkMode ? '#d4d4d4' : '#6B7280' }}
               aria-label="Toggle Dark Mode"
             >
@@ -161,7 +166,7 @@ const ClientLayout = () => {
           <div className="flex md:hidden items-center gap-3">
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-full border transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-2 rounded-full border transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center focus-ring"
               style={{ borderColor: darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(10,37,64,0.15)' }}
               aria-label="Toggle Dark Mode"
             >
@@ -169,7 +174,7 @@ const ClientLayout = () => {
             </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-2 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center focus-ring rounded"
               style={{ color: darkMode ? '#ffffff' : '#0A2540' }}
               aria-label="Toggle Navigation Menu"
               aria-expanded={mobileMenuOpen}
@@ -180,51 +185,54 @@ const ClientLayout = () => {
         </div>
       </header>
 
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
+      {/* Mobile Menu Drawer (smooth opening and closing CSS animation) */}
+      <div
+        className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ease-out ${
+          mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        style={{ background: 'rgba(10,37,64,0.5)', backdropFilter: 'blur(4px)' }}
+        onClick={() => setMobileMenuOpen(false)}
+        aria-hidden={!mobileMenuOpen}
+      >
         <div
-          className="fixed inset-0 z-40 md:hidden"
-          style={{ background: 'rgba(10,37,64,0.5)', backdropFilter: 'blur(4px)' }}
-          onClick={() => setMobileMenuOpen(false)}
+          className={`fixed top-0 right-0 bottom-0 w-72 flex flex-col p-8 shadow-2xl transition-transform duration-300 ease-out ${
+            mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+          style={{ background: '#0A2540' }}
+          onClick={e => e.stopPropagation()}
         >
-          <div
-            className="fixed top-0 right-0 bottom-0 w-72 flex flex-col p-8"
-            style={{ background: '#0A2540' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-10">
-              <span className="font-display font-bold text-base tracking-widest uppercase text-white">
-                Da' Corridor
-              </span>
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-white/60 hover:text-white p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                aria-label="Close Navigation Menu"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <nav className="flex flex-col gap-1">
-              {navLinks.map((link) => (
-                <NavLink
-                  key={link.path}
-                  to={link.path}
-                  end={link.path === '/'}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-base font-medium tracking-wider py-3 min-h-[44px] flex items-center transition-all duration-200 border-b"
-                  style={({ isActive }) => ({
-                    color: isActive ? '#D4AF37' : 'rgba(255,255,255,0.75)',
-                    borderColor: 'rgba(255,255,255,0.06)',
-                  })}
-                >
-                  {link.label}
-                </NavLink>
-              ))}
-            </nav>
+          <div className="flex items-center justify-between mb-10">
+            <span className="font-display font-bold text-base tracking-widest uppercase text-white">
+              Da' Corridor
+            </span>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-white/60 hover:text-white p-2 min-h-[44px] min-w-[44px] flex items-center justify-center focus-ring rounded"
+              aria-label="Close Navigation Menu"
+            >
+              <X size={20} />
+            </button>
           </div>
+
+          <nav className="flex flex-col gap-1">
+            {navLinks.map((link) => (
+              <NavLink
+                key={link.path}
+                to={link.path}
+                end={link.path === '/'}
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-base font-medium tracking-wider py-3 min-h-[44px] flex items-center transition-all duration-200 border-b focus-ring rounded-sm"
+                style={({ isActive }) => ({
+                  color: isActive ? '#D4AF37' : 'rgba(255,255,255,0.75)',
+                  borderColor: 'rgba(255,255,255,0.06)',
+                })}
+              >
+                {link.label}
+              </NavLink>
+            ))}
+          </nav>
         </div>
-      )}
+      </div>
 
       {/* Main Content */}
       <main className="flex-grow">
@@ -273,10 +281,7 @@ const ClientLayout = () => {
                   <li key={link.path}>
                     <Link
                       to={link.path}
-                      className="transition-colors hover:text-white"
-                      style={{ color: 'rgba(255,255,255,0.6)' }}
-                      onMouseEnter={e => e.currentTarget.style.color = '#D4AF37'}
-                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+                      className="text-white/60 hover:text-[#D4AF37] transition-colors duration-200 focus-ring rounded-sm inline-block"
                     >
                       {link.label}
                     </Link>
@@ -296,10 +301,7 @@ const ClientLayout = () => {
                   <li key={link.path}>
                     <Link
                       to={link.path}
-                      className="transition-colors"
-                      style={{ color: 'rgba(255,255,255,0.6)' }}
-                      onMouseEnter={e => e.currentTarget.style.color = '#D4AF37'}
-                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+                      className="text-white/60 hover:text-[#D4AF37] transition-colors duration-200 focus-ring rounded-sm inline-block"
                     >
                       {link.label}
                     </Link>
@@ -328,10 +330,7 @@ const ClientLayout = () => {
                     <Mail size={16} className="shrink-0" style={{ color: '#D4AF37' }} />
                     <a
                       href={`mailto:${contactInfo.email}`}
-                      className="transition-colors"
-                      style={{ color: 'rgba(255,255,255,0.6)' }}
-                      onMouseEnter={e => e.currentTarget.style.color = '#D4AF37'}
-                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+                      className="text-white/60 hover:text-[#D4AF37] transition-colors duration-200 focus-ring rounded-sm inline-block"
                     >
                       {contactInfo.email}
                     </a>

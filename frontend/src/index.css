@@ -83,7 +83,7 @@
 
   /* Buttons */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white rounded-sm transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white rounded-sm transition-all duration-200 active:scale-[0.98];
     background-color: var(--arch-primary);
   }
   .btn-primary:hover {
@@ -93,7 +93,7 @@
   }
 
   .btn-gold {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-xs font-semibold uppercase tracking-wider rounded-sm transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-xs font-semibold uppercase tracking-wider rounded-sm transition-all duration-200 active:scale-[0.98];
     background-color: var(--arch-gold);
     color: var(--arch-primary);
   }
@@ -104,7 +104,7 @@
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-xs font-semibold uppercase tracking-wider rounded-sm transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-xs font-semibold uppercase tracking-wider rounded-sm transition-all duration-200 active:scale-[0.98];
     border: 1px solid var(--arch-primary);
     color: var(--arch-primary);
     background: transparent;
@@ -112,6 +112,11 @@
   .btn-outline:hover {
     background-color: var(--arch-primary);
     color: white;
+  }
+
+  /* Focus ring for keyboard accessibility */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F7F5] dark:focus-visible:ring-offset-[#1A1A1A] transition-shadow duration-150;
   }
 
   /* Section label (small gold uppercase text above headings) */
@@ -122,7 +127,7 @@
 
   /* Cards */
   .arch-card {
-    @apply bg-white rounded-sm;
+    @apply bg-white rounded-sm transition-all duration-200;
     border: 1px solid var(--arch-border);
     box-shadow: 0 2px 8px rgba(10,37,64,0.05);
   }
@@ -158,7 +163,7 @@
 
   /* Admin stat card */
   .stat-card {
-    @apply bg-white rounded-lg p-5;
+    @apply bg-white rounded-lg p-5 transition-all duration-200;
     border: 1px solid var(--arch-border);
     box-shadow: 0 2px 8px rgba(10,37,64,0.05);
   }
@@ -178,6 +183,11 @@
   }
   .dark .arch-input {
     color: white;
+  }
+
+  /* Skeleton placeholder for CLS-free loading states */
+  .arch-skeleton {
+    @apply bg-neutral-200/70 dark:bg-neutral-800/70 animate-pulse rounded-sm;
   }
 }
 
@@ -199,35 +209,41 @@
 
 /* ─── Animation Utilities ────────────────────────────────────────────────── */
 @keyframes slide-in {
-  from { transform: translateY(10px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
 }
 @keyframes fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 @keyframes scale-in {
-  from { transform: scale(0.97); opacity: 0; }
+  from { transform: scale(0.98); opacity: 0; }
   to   { transform: scale(1);    opacity: 1; }
 }
 
-.animate-slide-in  { animation: slide-in 0.25s ease-out forwards; }
-.animate-fade-in   { animation: fade-in  0.3s ease-out forwards; }
-.animate-scale-in  { animation: scale-in 0.2s ease-out forwards; }
+.animate-slide-in  { animation: slide-in 0.2s ease-out forwards; }
+.animate-fade-in   { animation: fade-in  0.2s ease-out forwards; }
+.animate-scale-in  { animation: scale-in 0.18s ease-out forwards; }
 
-/* ─── Public page transition ──────────────────────────────────────────────── */
+/* ─── Public page transition (Phase 11 — PRESERVED) ────────────────────────── */
 @keyframes page-enter {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .page-enter {
   animation: page-enter .25s ease-out both;
-  will-change:opacity,transform;
+  will-change: opacity, transform;
 }
-/* Respect user's motion preference */
+
+/* Respect user's motion preference (Phase 11/13 — PRESERVED) */
 @media (prefers-reduced-motion: reduce) {
-  .page-enter {
-    animation: none;
+  .page-enter,
+  .animate-slide-in,
+  .animate-fade-in,
+  .animate-scale-in,
+  .arch-skeleton {
+    animation: none !important;
+    transition: none !important;
   }
 }
 

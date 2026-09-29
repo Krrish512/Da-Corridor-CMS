@@ -12,6 +12,7 @@ const Comments = () => {
 
   const [formOpen, setFormOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [hoverRating, setHoverRating] = useState(0);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -75,7 +76,7 @@ const Comments = () => {
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight font-display text-neutral-950 dark:text-white mt-2">
           Comments & Reviews
         </h1>
-        <div className="h-1 w-12 bg-neutral-900 dark:bg-white mx-auto mt-4" />
+        <div className="w-10 h-0.5 mx-auto mt-4" style={{ background: '#D4AF37' }} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -104,7 +105,7 @@ const Comments = () => {
                 setFormOpen(true);
                 setSubmitted(false);
               }}
-              className="mt-8 w-full inline-flex items-center justify-center px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-white bg-neutral-900 hover:bg-neutral-800 dark:text-neutral-900 dark:bg-white dark:hover:bg-neutral-100 transition-colors rounded-sm shadow-sm"
+              className="mt-8 w-full inline-flex items-center justify-center px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-white bg-neutral-900 hover:bg-neutral-800 dark:text-neutral-900 dark:bg-white dark:hover:bg-neutral-100 transition-all active:scale-[0.98] rounded-sm shadow-sm focus-ring"
             >
               Write a Comment
             </button>
@@ -112,7 +113,7 @@ const Comments = () => {
 
           {/* Comment submission form */}
           {formOpen && (
-            <div className="p-8 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/10 rounded-sm">
+            <div className="p-8 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/10 rounded-sm animate-scale-in">
               <h3 className="text-lg font-bold font-display text-neutral-950 dark:text-white mb-6">
                 Share Your Experience
               </h3>
@@ -128,7 +129,7 @@ const Comments = () => {
                   </p>
                   <button 
                     onClick={() => setFormOpen(false)}
-                    className="text-xs font-bold uppercase tracking-wider underline hover:text-neutral-600"
+                    className="text-xs font-bold uppercase tracking-wider underline hover:text-neutral-600 focus-ring rounded-sm"
                   >
                     Close Form
                   </button>
@@ -143,28 +144,35 @@ const Comments = () => {
                       placeholder="e.g. John Doe"
                       value={formData.clientName}
                       onChange={(e) => setFormData(prev => ({ ...prev, clientName: e.target.value }))}
-                      className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white"
+                      className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white focus-ring"
                     />
                   </div>
 
-
-
                   <div>
                     <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block mb-2">Rating</label>
-                    <div className="flex gap-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          type="button"
-                          onClick={() => handleRatingClick(star)}
-                          className="hover:scale-110 transition-transform" style={{ color: '#D4AF37' }}
-                        >
-                          <Star 
-                            size={24} 
-                            fill={star <= formData.rating ? 'currentColor' : 'none'} 
-                          />
-                        </button>
-                      ))}
+                    <div 
+                      className="flex gap-2"
+                      onMouseLeave={() => setHoverRating(0)}
+                    >
+                      {[1, 2, 3, 4, 5].map((star) => {
+                        const isFilled = (hoverRating || formData.rating) >= star;
+                        return (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => handleRatingClick(star)}
+                            onMouseEnter={() => setHoverRating(star)}
+                            className="hover:scale-110 active:scale-95 transition-transform focus-ring rounded-sm p-0.5"
+                            style={{ color: '#D4AF37' }}
+                            aria-label={`Rate ${star} star`}
+                          >
+                            <Star 
+                              size={24} 
+                              fill={isFilled ? 'currentColor' : 'none'} 
+                            />
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -176,7 +184,7 @@ const Comments = () => {
                       placeholder="Share your thoughts about working with Da' Corridor..."
                       value={formData.review}
                       onChange={(e) => setFormData(prev => ({ ...prev, review: e.target.value }))}
-                      className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white"
+                      className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white focus-ring"
                     />
                   </div>
 
@@ -184,14 +192,14 @@ const Comments = () => {
                     <button
                       type="submit"
                       disabled={saveMutation.isLoading}
-                      className="flex-grow inline-flex items-center justify-center px-4 py-2.5 text-xs font-semibold uppercase tracking-wider rounded transition-all" style={{ background: '#0A2540', color: 'white' }} onMouseEnter={e => { e.currentTarget.style.background='#D4AF37'; e.currentTarget.style.color='#0A2540'; }} onMouseLeave={e => { e.currentTarget.style.background='#0A2540'; e.currentTarget.style.color='white'; }}
+                      className="flex-grow inline-flex items-center justify-center px-4 py-2.5 text-xs font-semibold uppercase tracking-wider rounded transition-all duration-200 bg-[#0A2540] text-white hover:bg-[#D4AF37] hover:text-[#0A2540] active:scale-[0.98] focus-ring"
                     >
                       {saveMutation.isLoading ? 'Submitting...' : 'Submit Review'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setFormOpen(false)}
-                      className="px-4 py-2.5 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors"
+                      className="px-4 py-2.5 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors focus-ring"
                     >
                       Cancel
                     </button>

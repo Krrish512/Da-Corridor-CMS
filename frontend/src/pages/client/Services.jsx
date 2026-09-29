@@ -33,8 +33,27 @@ const Services = () => {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-[#0A2540]" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          {Array(4).fill(0).map((_, idx) => (
+            <div
+              key={idx}
+              className="p-8 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/10 rounded-sm flex flex-col justify-between space-y-6"
+            >
+              <div>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="h-12 w-12 rounded arch-skeleton shrink-0" />
+                  <div className="h-7 w-48 arch-skeleton" />
+                </div>
+                <div className="w-full h-56 arch-skeleton mb-6" />
+                <div className="h-4 w-3/4 arch-skeleton mb-3" />
+                <div className="space-y-2">
+                  <div className="h-3 w-full arch-skeleton" />
+                  <div className="h-3 w-5/6 arch-skeleton" />
+                  <div className="h-3 w-4/6 arch-skeleton" />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">

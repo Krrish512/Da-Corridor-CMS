@@ -191,19 +191,13 @@ const Home = () => {
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
               to={hero?.ctaLink || '/portfolio'}
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-semibold uppercase tracking-wider rounded transition-all duration-200"
-              style={{ background: '#D4AF37', color: '#0A2540' }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#B8941F'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(212,175,55,0.35)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#D4AF37'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-semibold uppercase tracking-wider rounded transition-all duration-200 bg-[#D4AF37] text-[#0A2540] hover:bg-[#B8941F] hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(212,175,55,0.35)] active:scale-[0.98] focus-ring"
             >
               {hero?.ctaText || 'View Our Work'} <ArrowRight size={16} />
             </Link>
             <Link
               to="/contact"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-semibold uppercase tracking-wider rounded transition-all duration-200 text-white"
-              style={{ border: '1px solid rgba(255,255,255,0.35)' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#D4AF37'; e.currentTarget.style.color = '#D4AF37'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; e.currentTarget.style.color = 'white'; }}
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-semibold uppercase tracking-wider rounded transition-all duration-200 text-white border border-white/35 hover:border-[#D4AF37] hover:text-[#D4AF37] active:scale-[0.98] focus-ring"
             >
               Start a Project
             </Link>
@@ -287,10 +281,7 @@ const Home = () => {
                 </div>
                 <Link
                   to="/services"
-                  className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-colors"
-                  style={{ color: '#D4AF37' }}
-                  onMouseEnter={e => e.currentTarget.style.color = '#B8941F'}
-                  onMouseLeave={e => e.currentTarget.style.color = '#D4AF37'}
+                  className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-colors text-[#D4AF37] hover:text-[#B8941F] focus-ring rounded-sm w-fit"
                 >
                   Learn More <ArrowRight size={14} />
                 </Link>
@@ -315,7 +306,7 @@ const Home = () => {
             </div>
             <Link
               to="/portfolio"
-              className="text-sm font-semibold uppercase tracking-widest flex items-center gap-1 mt-4 sm:mt-0 transition-colors text-[#0A2540] dark:text-[#D4AF37] hover:text-[#D4AF37] dark:hover:text-white"
+              className="text-sm font-semibold uppercase tracking-widest flex items-center gap-1 mt-4 sm:mt-0 transition-colors text-[#0A2540] dark:text-[#D4AF37] hover:text-[#D4AF37] dark:hover:text-white focus-ring rounded-sm"
             >
               View Full Gallery <ArrowRight size={16} />
             </Link>
@@ -326,7 +317,7 @@ const Home = () => {
               <Link
                 key={project.id}
                 to="/portfolio"
-                className="group relative h-96 overflow-hidden rounded-sm flex flex-col justify-end portfolio-card border border-neutral-200 dark:border-neutral-800"
+                className="group relative h-96 overflow-hidden rounded-sm flex flex-col justify-end portfolio-card border border-neutral-200 dark:border-neutral-800 focus-ring"
               >
                 <img
                   src={project.coverImage}
@@ -454,21 +445,16 @@ const Home = () => {
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 required
-                className="flex-grow px-5 py-4 text-sm focus:outline-none rounded"
+                className="flex-grow px-5 py-4 text-sm focus:outline-none rounded focus-ring"
                 style={{
                   background: 'rgba(255,255,255,0.08)',
                   border: '1px solid rgba(255,255,255,0.15)',
                   color: 'white',
                 }}
-                onFocus={e => e.target.style.borderColor = '#D4AF37'}
-                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.15)'}
               />
               <button
                 type="submit"
-                className="px-8 py-4 font-semibold uppercase tracking-wider text-sm flex items-center justify-center gap-2 rounded transition-all duration-200"
-                style={{ background: '#D4AF37', color: '#0A2540' }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#B8941F'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = '#D4AF37'; e.currentTarget.style.transform = 'none'; }}
+                className="px-8 py-4 font-semibold uppercase tracking-wider text-sm flex items-center justify-center gap-2 rounded transition-all duration-200 bg-[#D4AF37] text-[#0A2540] hover:bg-[#B8941F] hover:-translate-y-0.5 active:scale-[0.98] focus-ring"
               >
                 <Mail size={16} /> Subscribe
               </button>

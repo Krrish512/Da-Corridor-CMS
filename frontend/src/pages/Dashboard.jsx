@@ -98,26 +98,16 @@ const Dashboard = () => {
             <Link
               key={idx}
               to={card.path}
-              className="rounded-lg p-4 flex flex-col justify-between h-28 transition-all duration-200 group"
-              style={{
-                ...cardStyle,
-                ...(isUrgent ? { borderColor: 'rgba(212,175,55,0.3)' } : {}),
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)';
-                e.currentTarget.style.borderColor = isUrgent ? '#D4AF37' : 'var(--arch-border)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'none';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
-                e.currentTarget.style.borderColor = isUrgent ? 'rgba(212,175,55,0.3)' : 'var(--arch-border)';
-              }}
+              className={`rounded-lg p-4 flex flex-col justify-between h-28 transition-all duration-200 group bg-white dark:bg-neutral-900 border hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] focus-ring ${
+                isUrgent
+                  ? 'border-[#D4AF37]/40 hover:border-[#D4AF37]'
+                  : 'border-[rgba(10,37,64,0.08)] dark:border-neutral-800 hover:border-[#D4AF37]/50'
+              }`}
             >
               <div className="flex justify-between items-start">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">{card.label}</span>
                 <Icon
-                  className={`w-4 h-4 shrink-0 ${
+                  className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110 ${
                     isUrgent 
                       ? 'text-[#D4AF37]' 
                       : card.highlight 

@@ -34,6 +34,17 @@ const UserProfileModal = ({ isOpen, onClose, initialTab = 'profile' }) => {
     setPasswordMessage(null);
   }, [user, isOpen, initialTab]);
 
+  // Keyboard navigation: Escape to close modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   useEffect(() => {
     if (isOpen && activeTab === 'activity') {
       fetchActivity();
@@ -103,8 +114,8 @@ const UserProfileModal = ({ isOpen, onClose, initialTab = 'profile' }) => {
   const currentBadge = roleBadges[user.role] || roleBadges.ADMIN;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(10,37,64,0.7)', backdropFilter: 'blur(4px)' }}>
-      <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 animate-scale-in flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ background: 'rgba(10,37,64,0.7)', backdropFilter: 'blur(4px)' }} onClick={onClose}>
+      <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 animate-scale-in flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
         
         {/* Header */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800" style={{ background: '#0A2540' }}>
@@ -126,7 +137,7 @@ const UserProfileModal = ({ isOpen, onClose, initialTab = 'profile' }) => {
               <p className="text-xs text-neutral-400">{user.email}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-full text-neutral-400 hover:text-white hover:bg-white/10 transition-colors">
+          <button onClick={onClose} className="p-1.5 rounded-full text-neutral-400 hover:text-white hover:bg-white/10 transition-colors focus-ring" aria-label="Close Profile Modal">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -135,7 +146,7 @@ const UserProfileModal = ({ isOpen, onClose, initialTab = 'profile' }) => {
         <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 px-6">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex items-center gap-2 py-3 px-4 text-xs font-semibold border-b-2 transition-colors ${
+            className={`flex items-center gap-2 py-3 px-4 text-xs font-semibold border-b-2 transition-colors focus-ring ${
               activeTab === 'profile'
                 ? 'border-[#D4AF37] text-neutral-900 dark:text-white font-bold'
                 : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'

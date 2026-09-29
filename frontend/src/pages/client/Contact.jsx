@@ -95,7 +95,7 @@ const Contact = () => {
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight font-display text-neutral-950 dark:text-white mt-2">
           Contact Headquarters
         </h1>
-        <div className="h-1 w-12 bg-neutral-900 dark:bg-white mx-auto mt-4" />
+        <div className="w-10 h-0.5 mx-auto mt-4" style={{ background: '#D4AF37' }} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
@@ -130,7 +130,7 @@ const Contact = () => {
                         href={contactInfo.googleMapsUrl} 
                         target="_blank" 
                         rel="noreferrer" 
-                        className="text-xs font-semibold text-neutral-950 dark:text-white hover:underline mt-1 inline-block"
+                        className="text-xs font-semibold text-neutral-950 dark:text-white hover:underline mt-1 inline-block focus-ring rounded-sm"
                       >
                         Open in Google Maps
                       </a>
@@ -157,7 +157,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold uppercase text-neutral-400 tracking-wider">Email Inquiry</h4>
-                    <a href={`mailto:${contactInfo.email}`} className="text-sm text-neutral-850 dark:text-neutral-200 mt-1 font-light hover:underline block">
+                    <a href={`mailto:${contactInfo.email}`} className="text-sm text-neutral-850 dark:text-neutral-200 mt-1 font-light hover:underline block focus-ring rounded-sm">
                       {contactInfo.email}
                     </a>
                   </div>
@@ -186,22 +186,22 @@ const Contact = () => {
               <h4 className="text-xs font-bold uppercase text-neutral-400 tracking-wider mb-4">Follow Our Feed</h4>
               <div className="flex gap-4 text-neutral-500">
                 {contactInfo.socialFacebook && (
-                  <a href={contactInfo.socialFacebook} target="_blank" rel="noreferrer" className="p-2 border border-neutral-200 dark:border-neutral-800 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-900 hover:text-neutral-900 dark:hover:text-white transition-colors">
+                  <a href={contactInfo.socialFacebook} target="_blank" rel="noreferrer" className="p-2 border border-neutral-200 dark:border-neutral-800 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-900 hover:text-neutral-900 dark:hover:text-white transition-colors focus-ring">
                     <Facebook size={18} />
                   </a>
                 )}
                 {contactInfo.socialTwitter && (
-                  <a href={contactInfo.socialTwitter} target="_blank" rel="noreferrer" className="p-2 border border-neutral-200 dark:border-neutral-800 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-900 hover:text-neutral-900 dark:hover:text-white transition-colors">
+                  <a href={contactInfo.socialTwitter} target="_blank" rel="noreferrer" className="p-2 border border-neutral-200 dark:border-neutral-800 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-900 hover:text-neutral-900 dark:hover:text-white transition-colors focus-ring">
                     <Twitter size={18} />
                   </a>
                 )}
                 {contactInfo.socialLinkedin && (
-                  <a href={contactInfo.socialLinkedin} target="_blank" rel="noreferrer" className="p-2 border border-neutral-200 dark:border-neutral-800 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-900 hover:text-neutral-900 dark:hover:text-white transition-colors">
+                  <a href={contactInfo.socialLinkedin} target="_blank" rel="noreferrer" className="p-2 border border-neutral-200 dark:border-neutral-800 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-900 hover:text-neutral-900 dark:hover:text-white transition-colors focus-ring">
                     <Linkedin size={18} />
                   </a>
                 )}
                 {contactInfo.socialInsta && (
-                  <a href={contactInfo.socialInsta} target="_blank" rel="noreferrer" className="p-2 border border-neutral-200 dark:border-neutral-800 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-900 hover:text-neutral-900 dark:hover:text-white transition-colors">
+                  <a href={contactInfo.socialInsta} target="_blank" rel="noreferrer" className="p-2 border border-neutral-200 dark:border-neutral-800 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-900 hover:text-neutral-900 dark:hover:text-white transition-colors focus-ring">
                     <Instagram size={18} />
                   </a>
                 )}
@@ -223,7 +223,7 @@ const Contact = () => {
               </p>
               <button
                 onClick={() => setSubmitted(false)}
-                className="mt-6 inline-flex items-center justify-center px-6 py-2.5 text-xs font-semibold uppercase tracking-wider rounded transition-all" style={{ background: '#0A2540', color: 'white' }}
+                className="mt-6 inline-flex items-center justify-center px-6 py-2.5 text-xs font-semibold uppercase tracking-wider rounded transition-all duration-200 bg-[#0A2540] text-white hover:bg-[#D4AF37] hover:text-[#0A2540] active:scale-[0.98] focus-ring"
               >
                 Send Another Message
               </button>
@@ -243,7 +243,7 @@ const Contact = () => {
                     placeholder="e.g. Elena Vance"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white"
+                    className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white focus-ring"
                   />
                 </div>
                 <div>
@@ -253,7 +253,7 @@ const Contact = () => {
                     placeholder="e.g. +1 (555) 019-2834"
                     value={formData.phone}
                     onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white"
+                    className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white focus-ring"
                   />
                 </div>
               </div>
@@ -267,7 +267,7 @@ const Contact = () => {
                     placeholder="e.g. elena@example.com"
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white"
+                    className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white focus-ring"
                   />
                 </div>
                 <div>
@@ -278,7 +278,7 @@ const Contact = () => {
                     placeholder="e.g. Residential Build Proposal"
                     value={formData.subject}
                     onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
-                    className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white"
+                    className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white focus-ring"
                   />
                 </div>
               </div>
@@ -291,14 +291,14 @@ const Contact = () => {
                   placeholder="Detail your request, project dimensions, estimated budget, or structural specifications..."
                   value={formData.message}
                   onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-                  className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white"
+                  className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white focus-ring"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={messageMutation.isLoading}
-                className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 text-xs font-semibold uppercase tracking-wider rounded transition-all duration-200" style={{ background: '#0A2540', color: 'white' }} onMouseEnter={e => { e.currentTarget.style.background='#D4AF37'; e.currentTarget.style.color='#0A2540'; }} onMouseLeave={e => { e.currentTarget.style.background='#0A2540'; e.currentTarget.style.color='white'; }}
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 text-xs font-semibold uppercase tracking-wider rounded transition-all duration-200 bg-[#0A2540] text-white hover:bg-[#D4AF37] hover:text-[#0A2540] active:scale-[0.98] focus-ring"
               >
                 <Send size={16} /> {messageMutation.isLoading ? 'Transmitting...' : 'Send Message'}
               </button>
