@@ -64,21 +64,27 @@ const AboutUs = () => {
 
         {/* Bio content */}
         <div className="lg:col-span-7">
-          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>
+          <span className="text-xs font-bold uppercase tracking-widest text-[#805B00] dark:text-[#D4AF37]">
             About Our Practice
           </span>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight font-display text-neutral-950 dark:text-white mt-2 mb-6">
             {about?.name || "Da' Corridor"}
           </h1>
-          <p className="text-sm font-semibold tracking-wider text-neutral-400 uppercase mb-6">
-            {about?.profession || 'Architecture & Spatial Design'}
-          </p>
-          <p className="text-base text-neutral-600 dark:text-neutral-300 font-light leading-relaxed mb-6">
-            {about?.about || 'A multi-disciplinary architecture and spatial planning practice crafting timeless spaces globally.'}
-          </p>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 font-light leading-relaxed mb-8">
-            {about?.biography || 'Founded with a dedication to timeless simplicity and spatial clarity, Da\' Corridor creates residences and commercial structures deeply connected to their environment.'}
-          </p>
+          {about?.profession && (
+            <p className="text-sm font-semibold tracking-wider text-neutral-400 uppercase mb-6">
+              {about.profession}
+            </p>
+          )}
+          {about?.about && (
+            <p className="text-base text-neutral-600 dark:text-neutral-300 font-light leading-relaxed mb-6">
+              {about.about}
+            </p>
+          )}
+          {about?.biography && (
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 font-light leading-relaxed mb-8">
+              {about.biography}
+            </p>
+          )}
 
           {/* Skills / Focus areas tags */}
           {about?.skills && (
@@ -139,7 +145,7 @@ const AboutUs = () => {
       {team && team.length > 0 && (
         <section className="border-t border-neutral-200 dark:border-neutral-800 pt-16 mb-24">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>
+            <span className="text-xs font-bold uppercase tracking-widest text-[#805B00] dark:text-[#D4AF37]">
               Our Staff
             </span>
             <h2 className="text-3xl font-bold tracking-tight font-display text-neutral-950 dark:text-white mt-2">
@@ -174,7 +180,7 @@ const AboutUs = () => {
                     <h3 className="text-base font-bold text-neutral-950 dark:text-white font-display">
                       {member.name}
                     </h3>
-                    <p className="text-xs font-medium uppercase mt-1 mb-3" style={{ color: '#D4AF37' }}>
+                    <p className="text-xs font-medium uppercase mt-1 mb-3 text-[#805B00] dark:text-[#D4AF37]">
                       {member.position}
                     </p>
                     <p className="text-xs font-light text-neutral-500 dark:text-neutral-400 leading-relaxed line-clamp-3">
@@ -216,7 +222,7 @@ const AboutUs = () => {
       {partners && partners.length > 0 && (
         <section className="border-t border-neutral-200 dark:border-neutral-800 pt-16">
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>
+            <span className="text-xs font-bold uppercase tracking-widest text-[#805B00] dark:text-[#D4AF37]">
               Collaboration
             </span>
             <h2 className="text-3xl font-bold tracking-tight font-display text-neutral-950 dark:text-white mt-2">

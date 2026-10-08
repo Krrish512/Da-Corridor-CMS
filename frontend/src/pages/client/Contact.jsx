@@ -89,7 +89,7 @@ const Contact = () => {
       />
       {/* HEADER */}
       <div className="text-center max-w-3xl mx-auto mb-16">
-        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>
+        <span className="text-xs font-bold uppercase tracking-widest text-[#805B00] dark:text-[#D4AF37]">
           Connect With Us
         </span>
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight font-display text-neutral-950 dark:text-white mt-2">
@@ -118,50 +118,58 @@ const Contact = () => {
               </div>
             ) : contactInfo ? (
               <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="h-10 w-10 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm flex items-center justify-center shrink-0">
-                    <MapPin size={18} className="text-neutral-900 dark:text-white" />
+                {contactInfo.officeAddress && (
+                  <div className="flex items-start gap-4">
+                    <div className="h-10 w-10 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm flex items-center justify-center shrink-0">
+                      <MapPin size={18} className="text-neutral-900 dark:text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold uppercase text-neutral-400 tracking-wider">Office Address</h4>
+                      <p className="text-sm text-neutral-800 dark:text-neutral-200 mt-1 font-light break-words">{contactInfo.officeAddress}</p>
+                      {contactInfo.googleMapsUrl && (
+                        <a 
+                          href={contactInfo.googleMapsUrl} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="text-xs font-semibold text-neutral-950 dark:text-white hover:underline mt-1 inline-block focus-ring rounded-sm"
+                        >
+                          Open in Google Maps
+                        </a>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold uppercase text-neutral-400 tracking-wider">Office Address</h4>
-                    <p className="text-sm text-neutral-800 dark:text-neutral-200 mt-1 font-light">{contactInfo.officeAddress}</p>
-                    {contactInfo.googleMapsUrl && (
-                      <a 
-                        href={contactInfo.googleMapsUrl} 
-                        target="_blank" 
-                        rel="noreferrer" 
-                        className="text-xs font-semibold text-neutral-950 dark:text-white hover:underline mt-1 inline-block focus-ring rounded-sm"
-                      >
-                        Open in Google Maps
+                )}
+
+                {contactInfo.phone && (
+                  <div className="flex items-start gap-4">
+                    <div className="h-10 w-10 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm flex items-center justify-center shrink-0">
+                      <Phone size={18} className="text-neutral-900 dark:text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold uppercase text-neutral-400 tracking-wider">Phone & WhatsApp</h4>
+                      <a href={`tel:${contactInfo.phone}`} className="text-sm text-neutral-800 dark:text-neutral-200 mt-1 font-light hover:underline block focus-ring rounded-sm">
+                        {contactInfo.phone}
                       </a>
-                    )}
+                      {contactInfo.whatsApp && (
+                        <p className="text-xs text-neutral-500 mt-0.5 font-light">WhatsApp: {contactInfo.whatsApp}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div className="flex items-start gap-4">
-                  <div className="h-10 w-10 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm flex items-center justify-center shrink-0">
-                    <Phone size={18} className="text-neutral-900 dark:text-white" />
+                {contactInfo.email && (
+                  <div className="flex items-start gap-4">
+                    <div className="h-10 w-10 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm flex items-center justify-center shrink-0">
+                      <Mail size={18} className="text-neutral-900 dark:text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold uppercase text-neutral-400 tracking-wider">Email Inquiry</h4>
+                      <a href={`mailto:${contactInfo.email}`} className="text-sm text-neutral-850 dark:text-neutral-200 mt-1 font-light hover:underline block focus-ring rounded-sm break-words">
+                        {contactInfo.email}
+                      </a>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold uppercase text-neutral-400 tracking-wider">Phone & WhatsApp</h4>
-                    <p className="text-sm text-neutral-800 dark:text-neutral-200 mt-1 font-light">{contactInfo.phone}</p>
-                    {contactInfo.whatsApp && (
-                      <p className="text-xs text-neutral-500 mt-0.5 font-light">WhatsApp: {contactInfo.whatsApp}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="h-10 w-10 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm flex items-center justify-center shrink-0">
-                    <Mail size={18} className="text-neutral-900 dark:text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold uppercase text-neutral-400 tracking-wider">Email Inquiry</h4>
-                    <a href={`mailto:${contactInfo.email}`} className="text-sm text-neutral-850 dark:text-neutral-200 mt-1 font-light hover:underline block focus-ring rounded-sm">
-                      {contactInfo.email}
-                    </a>
-                  </div>
-                </div>
+                )}
 
                 {contactInfo.workingHours && (
                   <div className="flex items-start gap-4">
@@ -176,7 +184,7 @@ const Contact = () => {
                 )}
               </div>
             ) : (
-              <p className="text-sm font-light text-neutral-400">Failed to load office details.</p>
+              <p className="text-sm font-light text-neutral-400">Office information is being updated.</p>
             )}
           </div>
 
@@ -240,7 +248,7 @@ const Contact = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Elena Vance"
+                    placeholder="Your full name"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white focus-ring"
@@ -250,7 +258,7 @@ const Contact = () => {
                   <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block mb-1">Phone Number</label>
                   <input
                     type="tel"
-                    placeholder="e.g. +1 (555) 019-2834"
+                    placeholder="Your phone number"
                     value={formData.phone}
                     onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                     className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white focus-ring"
@@ -264,7 +272,7 @@ const Contact = () => {
                   <input
                     type="email"
                     required
-                    placeholder="e.g. elena@example.com"
+                    placeholder="your.email@domain.com"
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                     className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white focus-ring"
@@ -275,7 +283,7 @@ const Contact = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Residential Build Proposal"
+                    placeholder="Project Inquiry / Consultation"
                     value={formData.subject}
                     onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
                     className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white focus-ring"

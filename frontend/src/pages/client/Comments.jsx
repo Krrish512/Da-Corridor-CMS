@@ -33,7 +33,7 @@ const Comments = () => {
   // Calculate average rating
   const averageRating = activeTestimonials.length > 0
     ? (activeTestimonials.reduce((acc, curr) => acc + curr.rating, 0) / activeTestimonials.length).toFixed(1)
-    : '5.0';
+    : '0.0';
 
   const saveMutation = useMutation({
     mutationFn: (data) => api.post('/testimonials', data),
@@ -75,7 +75,7 @@ const Comments = () => {
       />
       {/* HEADER */}
       <div className="text-center max-w-3xl mx-auto mb-16">
-        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>
+        <span className="text-xs font-bold uppercase tracking-widest text-[#805B00] dark:text-[#D4AF37]">
           Client Feedback
         </span>
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight font-display text-neutral-950 dark:text-white mt-2">
@@ -90,19 +90,21 @@ const Comments = () => {
           <div className="p-8 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/10 rounded-sm text-center">
             <h3 className="text-sm font-bold uppercase tracking-widest text-neutral-400 mb-2">Average Rating</h3>
             <div className="text-6xl font-bold font-display text-neutral-950 dark:text-white mb-4">
-              {averageRating}
+              {activeTestimonials.length > 0 ? averageRating : '—'}
             </div>
             <div className="flex justify-center gap-1 text-amber-500 mb-3">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star 
                   key={star} 
-                  fill={star <= Math.round(parseFloat(averageRating)) ? 'currentColor' : 'none'} 
+                  fill={activeTestimonials.length > 0 && star <= Math.round(parseFloat(averageRating)) ? 'currentColor' : 'none'} 
                   size={20} 
                 />
               ))}
             </div>
             <p className="text-xs text-neutral-500 font-light">
-              Based on {activeTestimonials.length} verified client reviews.
+              {activeTestimonials.length > 0 
+                ? `Based on ${activeTestimonials.length} verified client reviews.`
+                : 'No client reviews published yet.'}
             </p>
 
             <button
@@ -146,7 +148,7 @@ const Comments = () => {
                     <input 
                       type="text" 
                       required
-                      placeholder="e.g. John Doe"
+                      placeholder="Your name or company"
                       value={formData.clientName}
                       onChange={(e) => setFormData(prev => ({ ...prev, clientName: e.target.value }))}
                       className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm text-sm focus:outline-none focus:border-neutral-950 dark:focus:border-white transition-all text-neutral-900 dark:text-white focus-ring"
