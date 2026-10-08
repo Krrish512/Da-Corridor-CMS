@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: dacorridor-backend
+    runtime: node
+    rootDir: backend
+    plan: starter
+    region: oregon
+    buildCommand: npm install && npx prisma generate && npx prisma migrate deploy
+    startCommand: node src/server.js
+    healthCheckPath: /api/health/liveness
+    disk:
+      name: uploads-data
+      mountPath: /opt/render/project/src/backend/uploads
+      sizeGB: 10
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: INITIAL_ADMIN_NAME
+        sync: false
+      - key: INITIAL_ADMIN_EMAIL
+        sync: false
+      - key: INITIAL_ADMIN_PASSWORD
+        sync: false

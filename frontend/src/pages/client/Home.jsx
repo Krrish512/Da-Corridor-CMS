@@ -175,16 +175,16 @@ const Home = () => {
           {/* Gold label */}
           <div className="flex items-center gap-3 mb-6">
             <span className="w-8 h-px" style={{ background: '#D4AF37' }} />
-            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>
+            <span className="text-xs font-bold uppercase tracking-widest text-[#D4AF37] drop-shadow-sm">
               {hero?.tagline || 'Premium Architecture Studio'}
             </span>
           </div>
 
-          <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-white leading-tight mb-8 max-w-4xl">
+          <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-white leading-tight mb-8 max-w-4xl drop-shadow-md">
             {hero?.heading || 'Architecture\nThat Endures'}
           </h1>
 
-          <p className="text-base sm:text-lg font-light leading-relaxed mb-10 max-w-xl" style={{ color: 'rgba(255,255,255,0.7)' }}>
+          <p className="text-base sm:text-lg font-light leading-relaxed mb-10 max-w-xl text-white/85 drop-shadow-sm">
             {hero?.subHeading || 'Crafting luxury spaces, sustainable structures, and minimal interiors for clients who demand the extraordinary.'}
           </p>
 
@@ -197,7 +197,7 @@ const Home = () => {
             </Link>
             <Link
               to="/contact"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-semibold uppercase tracking-wider rounded transition-all duration-200 text-white border border-white/35 hover:border-[#D4AF37] hover:text-[#D4AF37] active:scale-[0.98] focus-ring"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-semibold uppercase tracking-wider rounded transition-all duration-200 text-white border border-white/60 hover:border-[#D4AF37] hover:text-[#D4AF37] active:scale-[0.98] focus-ring"
             >
               Start a Project
             </Link>
@@ -206,7 +206,7 @@ const Home = () => {
 
         {/* Bottom scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>Scroll</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-white/75">Scroll</span>
           <div className="w-px h-8" style={{ background: 'linear-gradient(to bottom, #D4AF37, transparent)' }} />
         </div>
       </section>
@@ -221,7 +221,7 @@ const Home = () => {
                   <p className="font-display text-3xl sm:text-4xl font-bold" style={{ color: '#D4AF37' }}>
                     {stat.value}
                   </p>
-                  <p className="text-xs font-medium uppercase tracking-wider mt-1" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                  <p className="text-xs font-medium uppercase tracking-wider mt-1 text-white/70">
                     {stat.label}
                   </p>
                 </div>
@@ -236,7 +236,7 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-16">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>
+              <span className="text-xs font-bold uppercase tracking-widest text-[#805B00] dark:text-[#D4AF37]">
                 What We Do
               </span>
               <h2 className="font-display text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white mt-2">
@@ -275,13 +275,13 @@ const Home = () => {
                   <h3 className="font-display text-xl font-bold text-neutral-900 dark:text-white mb-3">
                     {service.title}
                   </h3>
-                  <p className="text-neutral-500 dark:text-neutral-400 font-light text-sm leading-relaxed mb-6">
+                  <p className="text-neutral-600 dark:text-neutral-400 font-light text-sm leading-relaxed mb-6">
                     {service.shortDescription}
                   </p>
                 </div>
                 <Link
                   to="/services"
-                  className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-colors text-[#D4AF37] hover:text-[#B8941F] focus-ring rounded-sm w-fit"
+                  className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-colors text-[#805B00] dark:text-[#D4AF37] hover:text-[#B8941F] focus-ring rounded-sm w-fit"
                 >
                   Learn More <ArrowRight size={14} />
                 </Link>
@@ -292,11 +292,11 @@ const Home = () => {
       </section>
 
       {/* ── 4. FEATURED PROJECTS ─────────────────────────────────────────── */}
-      <section className="py-24 bg-[#F7F7F5] dark:bg-[#1A1A1A] border-t border-b border-neutral-200 dark:border-neutral-800" style={{}}>
+      <section className="py-24 bg-[#F7F7F5] dark:bg-[#1A1A1A] border-t border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-16">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>
+              <span className="text-xs font-bold uppercase tracking-widest text-[#805B00] dark:text-[#D4AF37]">
                 Selected Works
               </span>
               <h2 className="font-display text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white mt-2">
@@ -337,7 +337,7 @@ const Home = () => {
                   <h3 className="font-display text-xl font-bold mb-2">
                     {project.title}
                   </h3>
-                  <div className="flex items-center gap-4 text-xs font-light" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <div className="flex items-center gap-4 text-xs font-light text-white/80">
                     <span className="flex items-center gap-1"><MapPin size={11} /> {project.location}</span>
                     <span className="flex items-center gap-1"><Calendar size={11} /> {new Date(project.completionDate).getFullYear()}</span>
                   </div>
@@ -354,7 +354,7 @@ const Home = () => {
 
           {/* Process Steps */}
           <div>
-            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>Work Method</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-[#805B00] dark:text-[#D4AF37]">Work Method</span>
             <h2 className="font-display text-3xl font-bold text-neutral-900 dark:text-white mt-2 mb-12">
               The Design Process
             </h2>
@@ -362,8 +362,7 @@ const Home = () => {
               {processSteps?.map((step) => (
                 <div key={step.id} className="flex gap-6">
                   <div
-                    className="h-12 w-12 shrink-0 rounded-full flex items-center justify-center text-sm font-bold font-display"
-                    style={{ border: '2px solid #D4AF37', color: '#D4AF37' }}
+                    className="h-12 w-12 shrink-0 rounded-full flex items-center justify-center text-sm font-bold font-display border-2 border-[#805B00] text-[#805B00] dark:border-[#D4AF37] dark:text-[#D4AF37]"
                   >
                     0{step.stepNumber}
                   </div>
@@ -371,7 +370,7 @@ const Home = () => {
                     <h3 className="font-display text-lg font-bold text-neutral-900 dark:text-white mb-2">
                       {step.title}
                     </h3>
-                    <p className="text-sm font-light text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                    <p className="text-sm font-light text-neutral-600 dark:text-neutral-400 leading-relaxed">
                       {step.description}
                     </p>
                   </div>
@@ -382,7 +381,7 @@ const Home = () => {
 
           {/* Why Choose Us */}
           <div>
-            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>Principles</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-[#805B00] dark:text-[#D4AF37]">Principles</span>
             <h2 className="font-display text-3xl font-bold text-neutral-900 dark:text-white mt-2 mb-12">
               Why Partner With Us
             </h2>
@@ -402,7 +401,7 @@ const Home = () => {
                   <h3 className="font-display text-base font-bold text-neutral-900 dark:text-white mb-2">
                     {item.title}
                   </h3>
-                  <p className="text-xs font-light text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                  <p className="text-xs font-light text-neutral-600 dark:text-neutral-400 leading-relaxed">
                     {item.description}
                   </p>
                 </div>
@@ -419,13 +418,13 @@ const Home = () => {
           style={{ backgroundImage: 'radial-gradient(ellipse at center, #D4AF37 0%, transparent 70%)' }} />
 
         <div className="max-w-3xl mx-auto px-4 text-center relative z-10">
-          <span className="text-xs font-bold uppercase tracking-widest block mb-4" style={{ color: '#D4AF37' }}>
+          <span className="text-xs font-bold uppercase tracking-widest block mb-4 text-[#D4AF37]">
             Updates
           </span>
           <h2 className="font-display text-3xl sm:text-4xl font-bold text-white mb-6">
             Join the Da' Corridor Newsletter
           </h2>
-          <p className="text-sm font-light mb-10 leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <p className="text-sm font-light mb-10 leading-relaxed text-white/85">
             Get quarterly design insights, architectural analysis, new project reveals, and sustainable materials reviews directly in your inbox.
           </p>
 
@@ -442,15 +441,11 @@ const Home = () => {
               <input
                 type="email"
                 placeholder="Enter your email address"
+                aria-label="Email address for newsletter"
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 required
-                className="flex-grow px-5 py-4 text-sm focus:outline-none rounded focus-ring"
-                style={{
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  color: 'white',
-                }}
+                className="flex-grow px-5 py-4 text-sm focus:outline-none rounded focus-ring bg-white/[0.08] border border-white/45 text-white placeholder:text-white/60"
               />
               <button
                 type="submit"

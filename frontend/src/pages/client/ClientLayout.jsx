@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Sun, Moon, Menu, X, MapPin, Phone, Mail } from 'lucide-react';
+import {
+  Sun, Moon, Menu, X, MapPin, Phone, Mail, Facebook, Twitter, Linkedin, Instagram
+} from 'lucide-react';
 
 import api from '../../utils/api';
 import PageTransition from '../../components/layout/PageTransition';
@@ -25,6 +27,12 @@ const ClientLayout = () => {
   const { data: contactInfo } = useQuery({
     queryKey: ['publicContactInfo'],
     queryFn: () => api.get('/contact/details').then(res => res.data),
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const { data: systemSettings } = useQuery({
+    queryKey: ['publicSystemSettings'],
+    queryFn: () => api.get('/settings').then(res => res.data),
     staleTime: 1000 * 60 * 10,
   });
 
@@ -251,22 +259,77 @@ const ClientLayout = () => {
 
             {/* Brand Column */}
             <div>
-              <div className="flex items-center gap-3 mb-6">
+              <Link
+                to="/"
+                className="group inline-flex items-center gap-3 mb-6 focus-ring rounded"
+                aria-label="Da' Corridor Home"
+              >
                 <div
-                  className="h-8 w-8 rounded flex items-center justify-center font-display font-bold text-sm"
+                  className="h-8 w-8 rounded flex items-center justify-center font-display font-bold text-sm transition-transform duration-200 group-hover:scale-105"
                   style={{ background: 'transparent', color: '#0A2540' }}
                 >
                   <img src="/Da' Corridor.png" alt="Logo" className="h-full w-full object-contain" />
                 </div>
-                <span className="font-display font-bold text-lg tracking-widest uppercase text-white">
+                <span className="font-display font-bold text-lg tracking-widest uppercase text-white transition-colors duration-200 group-hover:text-[#D4AF37]">
                   Da' Corridor
                 </span>
-              </div>
-              <p className="text-sm leading-relaxed mb-6 font-light">
+              </Link>
+              <p className="text-sm leading-relaxed mb-6 font-light text-white/70">
                 Crafting luxury space plans, sustainable architectures, and minimal interiors that endure.
               </p>
-              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                &copy; {new Date().getFullYear()} Da' Corridor. All rights reserved.
+
+              {/* Social Media Links from CMS */}
+              {contactInfo && (contactInfo.socialFacebook || contactInfo.socialTwitter || contactInfo.socialLinkedin || contactInfo.socialInsta) && (
+                <div className="flex items-center gap-3 mb-6">
+                  {contactInfo.socialFacebook && (
+                    <a
+                      href={contactInfo.socialFacebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-full border border-white/10 text-white/60 hover:text-[#D4AF37] hover:border-[#D4AF37]/40 hover:scale-110 transition-all duration-200 focus-ring"
+                      aria-label="Facebook"
+                    >
+                      <Facebook size={16} />
+                    </a>
+                  )}
+                  {contactInfo.socialTwitter && (
+                    <a
+                      href={contactInfo.socialTwitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-full border border-white/10 text-white/60 hover:text-[#D4AF37] hover:border-[#D4AF37]/40 hover:scale-110 transition-all duration-200 focus-ring"
+                      aria-label="Twitter / X"
+                    >
+                      <Twitter size={16} />
+                    </a>
+                  )}
+                  {contactInfo.socialLinkedin && (
+                    <a
+                      href={contactInfo.socialLinkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-full border border-white/10 text-white/60 hover:text-[#D4AF37] hover:border-[#D4AF37]/40 hover:scale-110 transition-all duration-200 focus-ring"
+                      aria-label="LinkedIn"
+                    >
+                      <Linkedin size={16} />
+                    </a>
+                  )}
+                  {contactInfo.socialInsta && (
+                    <a
+                      href={contactInfo.socialInsta}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-full border border-white/10 text-white/60 hover:text-[#D4AF37] hover:border-[#D4AF37]/40 hover:scale-110 transition-all duration-200 focus-ring"
+                      aria-label="Instagram"
+                    >
+                      <Instagram size={16} />
+                    </a>
+                  )}
+                </div>
+              )}
+
+              <p className="text-xs text-white/70">
+                {systemSettings?.footerText || `\u00A9 ${new Date().getFullYear()} Da' Corridor. All rights reserved.`}
               </p>
             </div>
 
@@ -281,7 +344,7 @@ const ClientLayout = () => {
                   <li key={link.path}>
                     <Link
                       to={link.path}
-                      className="text-white/60 hover:text-[#D4AF37] transition-colors duration-200 focus-ring rounded-sm inline-block"
+                      className="text-white/60 hover:text-[#D4AF37] hover:translate-x-1 transition-all duration-200 focus-ring rounded-sm inline-block"
                     >
                       {link.label}
                     </Link>
@@ -301,7 +364,7 @@ const ClientLayout = () => {
                   <li key={link.path}>
                     <Link
                       to={link.path}
-                      className="text-white/60 hover:text-[#D4AF37] transition-colors duration-200 focus-ring rounded-sm inline-block"
+                      className="text-white/60 hover:text-[#D4AF37] hover:translate-x-1 transition-all duration-200 focus-ring rounded-sm inline-block"
                     >
                       {link.label}
                     </Link>
@@ -318,16 +381,21 @@ const ClientLayout = () => {
               </h3>
               {contactInfo ? (
                 <ul className="space-y-4 text-sm font-light">
-                  <li className="flex items-start gap-3">
-                    <MapPin size={16} className="mt-0.5 shrink-0" style={{ color: '#D4AF37' }} />
-                    <span style={{ color: 'rgba(255,255,255,0.6)' }}>{contactInfo.officeAddress}</span>
+                  <li className="flex items-start gap-3 group">
+                    <MapPin size={16} className="mt-0.5 shrink-0 text-[#D4AF37] group-hover:scale-110 transition-transform duration-200" />
+                    <span className="text-white/60 group-hover:text-white transition-colors duration-200">{contactInfo.officeAddress}</span>
                   </li>
-                  <li className="flex items-center gap-3">
-                    <Phone size={16} className="shrink-0" style={{ color: '#D4AF37' }} />
-                    <span style={{ color: 'rgba(255,255,255,0.6)' }}>{contactInfo.phone}</span>
+                  <li className="flex items-center gap-3 group">
+                    <Phone size={16} className="shrink-0 text-[#D4AF37] group-hover:scale-110 transition-transform duration-200" />
+                    <a
+                      href={`tel:${contactInfo.phone}`}
+                      className="text-white/60 hover:text-[#D4AF37] transition-colors duration-200 focus-ring rounded-sm inline-block"
+                    >
+                      {contactInfo.phone}
+                    </a>
                   </li>
-                  <li className="flex items-center gap-3">
-                    <Mail size={16} className="shrink-0" style={{ color: '#D4AF37' }} />
+                  <li className="flex items-center gap-3 group">
+                    <Mail size={16} className="shrink-0 text-[#D4AF37] group-hover:scale-110 transition-transform duration-200" />
                     <a
                       href={`mailto:${contactInfo.email}`}
                       className="text-white/60 hover:text-[#D4AF37] transition-colors duration-200 focus-ring rounded-sm inline-block"

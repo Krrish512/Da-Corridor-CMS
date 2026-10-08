@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Users, Target, Eye, Facebook, Twitter, Linkedin, Instagram
+  Users, Target, Eye, Facebook, Twitter, Linkedin, Instagram, Building2
 } from 'lucide-react';
 
 import api from '../../utils/api';
@@ -42,14 +42,24 @@ const AboutUs = () => {
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center mb-24">
         {/* Profile Image container */}
         <div className="lg:col-span-5 relative">
-          <div className="absolute inset-0 bg-neutral-900/10 dark:bg-white/10 rounded-sm transform translate-x-4 translate-y-4 -z-10" />
-          <img
-            src={about?.profileImage || 'miss'}
-            alt={about?.name || ' mmiss'}
-            loading="lazy"
-            decoding="async"
-            className="w-full h-auto aspect-[4/5] object-cover object-center rounded-sm border border-neutral-200 dark:border-neutral-800 shadow-md"
-          />
+          {about?.profileImage && about.profileImage.trim() && about.profileImage !== 'miss' ? (
+            <>
+              <div className="absolute inset-0 bg-neutral-900/10 dark:bg-white/10 rounded-sm transform translate-x-4 translate-y-4 -z-10" />
+              <img
+                src={about.profileImage}
+                alt={about.name || "Da' Corridor Studio"}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-auto aspect-[4/5] object-cover object-center rounded-sm border border-neutral-200 dark:border-neutral-800 shadow-md"
+              />
+            </>
+          ) : (
+            <div className="w-full aspect-[4/5] rounded-sm border border-dashed border-neutral-300 dark:border-neutral-800 flex flex-col items-center justify-center bg-neutral-100/60 dark:bg-neutral-900/30 text-neutral-400 p-8 text-center">
+              <Building2 size={48} className="text-neutral-400 dark:text-neutral-600 mb-3" />
+              <span className="text-xs uppercase tracking-widest font-semibold text-neutral-500 dark:text-neutral-400">Da' Corridor Architecture</span>
+              <span className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1">Spatial Design Practice</span>
+            </div>
+          )}
         </div>
 
         {/* Bio content */}
@@ -58,16 +68,16 @@ const AboutUs = () => {
             About Our Practice
           </span>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight font-display text-neutral-950 dark:text-white mt-2 mb-6">
-            {about?.name || 'Miss-Patel - Founder & Principal Da\' Corridor'}
+            {about?.name || "Da' Corridor"}
           </h1>
           <p className="text-sm font-semibold tracking-wider text-neutral-400 uppercase mb-6">
-            {about?.profession || 'High-End Minimalist Architecture'}
+            {about?.profession || 'Architecture & Spatial Design'}
           </p>
           <p className="text-base text-neutral-600 dark:text-neutral-300 font-light leading-relaxed mb-6">
-            {about?.about || 'A multi-disciplinary architecture and spatial planning firm based in New York. We craft timeless spaces globally.'}
+            {about?.about || 'A multi-disciplinary architecture and spatial planning practice crafting timeless spaces globally.'}
           </p>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 font-light leading-relaxed mb-8">
-            {about?.biography || 'Founded in 2012 by principal architect Miss-Patel, Da\' Corridor has grown into a highly recognized brand. We believe in removing the unnecessary to celebrate the essential, creating residences and corporate structures that feel deeply connected to their environment.'}
+            {about?.biography || 'Founded with a dedication to timeless simplicity and spatial clarity, Da\' Corridor creates residences and commercial structures deeply connected to their environment.'}
           </p>
 
           {/* Skills / Focus areas tags */}

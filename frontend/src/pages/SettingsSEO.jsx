@@ -84,6 +84,7 @@ const SettingsSEO = () => {
     mutationFn: (data) => api.put('/settings', data),
     onSuccess: () => {
       queryClient.invalidateQueries(['systemSettings']);
+      queryClient.invalidateQueries(['publicSystemSettings']);
       addToast('System configuration saved!', 'success');
     },
     onError: () => addToast('Failed to save system settings.', 'error')
@@ -93,6 +94,7 @@ const SettingsSEO = () => {
     mutationFn: (data) => api.put('/seo', data),
     onSuccess: () => {
       queryClient.invalidateQueries(['seoSettings']);
+      queryClient.invalidateQueries(['publicSeo']);
       addToast('Global SEO settings updated!', 'success');
     },
     onError: () => addToast('Failed to update SEO configurations.', 'error')
