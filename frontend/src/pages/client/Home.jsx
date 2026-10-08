@@ -412,25 +412,25 @@ const Home = () => {
       </section>
 
       {/* ── 6. NEWSLETTER ────────────────────────────────────────────────── */}
-      <section className="py-24 relative overflow-hidden" style={{ background: '#0A2540' }}>
+      <section className="py-16 sm:py-20 relative overflow-hidden" style={{ background: '#0A2540' }}>
         {/* Decorative gold radial */}
         <div className="absolute inset-0 opacity-5 pointer-events-none"
           style={{ backgroundImage: 'radial-gradient(ellipse at center, #D4AF37 0%, transparent 70%)' }} />
 
         <div className="max-w-3xl mx-auto px-4 text-center relative z-10">
-          <span className="text-xs font-bold uppercase tracking-widest block mb-4 text-[#D4AF37]">
+          <span className="text-xs font-bold uppercase tracking-widest block mb-3.5 text-[#D4AF37]">
             Updates
           </span>
-          <h2 className="font-display text-3xl sm:text-4xl font-bold text-white mb-6">
+          <h2 className="font-display text-3xl sm:text-4xl font-bold text-white mb-4">
             Join the Da' Corridor Newsletter
           </h2>
-          <p className="text-sm font-light mb-10 leading-relaxed text-white/85">
+          <p className="text-sm font-light mb-7 leading-relaxed text-white/85 max-w-2xl mx-auto">
             Get quarterly design insights, architectural analysis, new project reveals, and sustainable materials reviews directly in your inbox.
           </p>
 
           {subscribed ? (
             <div
-              className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded"
               style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37' }}
             >
               <CheckCircle2 size={18} />
@@ -445,11 +445,11 @@ const Home = () => {
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 required
-                className="flex-grow px-5 py-4 text-sm focus:outline-none rounded focus-ring bg-white/[0.08] border border-white/45 text-white placeholder:text-white/60"
+                className="flex-grow px-4 py-3 text-sm focus:outline-none rounded focus-ring bg-white/[0.08] border border-white/45 text-white placeholder:text-white/60"
               />
               <button
                 type="submit"
-                className="px-8 py-4 font-semibold uppercase tracking-wider text-sm flex items-center justify-center gap-2 rounded transition-all duration-200 bg-[#D4AF37] text-[#0A2540] hover:bg-[#B8941F] hover:-translate-y-0.5 active:scale-[0.98] focus-ring"
+                className="px-6 py-3 font-semibold uppercase tracking-wider text-sm flex items-center justify-center gap-2 rounded transition-all duration-200 bg-[#D4AF37] text-[#0A2540] hover:bg-[#B8941F] hover:-translate-y-0.5 active:scale-[0.98] focus-ring shrink-0 motion-reduce:hover:translate-y-0"
               >
                 <Mail size={16} /> Subscribe
               </button>
